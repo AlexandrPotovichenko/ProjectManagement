@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,21 +15,7 @@ using ProjectManagement.DataAccess.Context;
 using ProjectManagement.DataAccess.Repositories.Implementation;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Profiles;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-
-//using FluentValidation.AspNetCore;
-//using Microsoft.AspNetCore.Authentication;
-//using Microsoft.AspNetCore.Builder;
-//using Microsoft.AspNetCore.Hosting;
-
-//using Microsoft.Extensions.Configuration;
-//using Microsoft.Extensions.DependencyInjection;
-//using Microsoft.Extensions.Hosting;
-//using Microsoft.OpenApi.Models;
 
 
 
@@ -55,10 +39,48 @@ namespace ProjectManagement
             services.AddScoped<ICheckListRepository, CheckListRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IBoardRepository, BoardRepository>();
+            services.AddScoped<ICardRepository, CardRepository>();
 
-            services.AddScoped<ICheckListService, CheckListService>();
+
+
+            services.AddControllersWithViews()
+    .AddNewtonsoftJson(options =>
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+);
+
+
+
+            services.AddScoped<IBoardService, BoardService>(x =>
+                        new BoardService(
+                            x.GetRequiredService<IBoardRepository>(), x.GetRequiredService<IUserRepository>())
+                        );
+            services.AddScoped<ICardService, CardService>(x =>
+            new CardService(
+                x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IListRepository>(), x.GetRequiredService<IUserRepository>()));
+            services.AddScoped<ICheckListService, CheckListService>(x =>
+                        new CheckListService(x.GetRequiredService<ICheckListRepository>(), x.GetRequiredService<ICardRepository>())
+                        );
+
+            //        services.AddScoped<IBoardService>(x =>
+            //            new BoardService(
+            //                x.GetRequiredService<BoardRepository>(), x.GetRequiredService<UserRepository>())
+            //            );
+            //        services.AddScoped<ICardService>(x =>
+            //new CardService(
+            //    x.GetRequiredService<CardRepository>(), x.GetRequiredService<IListRepository>(), x.GetRequiredService<UserRepository>())
+            //);
+            //        services.AddScoped<ICheckListService>(x =>
+            //            new CheckListService(x.GetRequiredService<ICheckListRepository>(), x.GetRequiredService<ICardRepository>())
+            //            );
+
+
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IBoardService, BoardService>();
+
+          
+
+               
+            
+           
 
             services.AddAuthentication("Basic")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
@@ -71,7 +93,15 @@ namespace ProjectManagement
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectManagement", Version = "v1" });
+
+                
+               
+
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectManagement", Version = "v1" }); 
+                c.CustomSchemaIds(i => i.FullName);
+                c.DocInclusionPredicate((docName, description) => true);
+                //var xmlFilePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+                //c.IncludeXmlComments(xmlFilePath);
                 c.AddSecurityDefinition("basic", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -97,8 +127,8 @@ namespace ProjectManagement
                 });
             });
 
-            services.AddAutoMapper(typeof(CheckListProfile));
-            //services.AddAutoMapper(typeof(CheckListProfile));
+            services.AddAutoMapper(typeof(ProjectManagementProfile));
+ 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

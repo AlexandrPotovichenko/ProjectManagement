@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using Ardalis.GuardClauses;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ProjectManagement.BusinessLogic.Specifications;
 using ProjectManagement.BusinessLogic.Services.Interfaces;
 
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Domain.Models;
+using System.Linq;
+using System;
 
 namespace ProjectManagement.BusinessLogic.Services.Implementation
 {
@@ -12,59 +15,94 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     {
         private readonly IBoardRepository _BoardRepository;
         private readonly IUserRepository _UserRepository;
-        //private readonly IBoardMemberRepository _BoardMemberRepository;
         public BoardService(IBoardRepository BoardRepository, IUserRepository UserRepository)
         {
             _BoardRepository = BoardRepository;
             _UserRepository = UserRepository;
         }
 
-        //public async Task<IEnumerable<Board>> GetCompletedBoardsAsync(int userId)
-        //{
-        //    var specification = new GetCompletedBoardsOfUserSpecification(userId);
-        //    return await _BoardRepository.GetManyAsync(specification);
-        //}
 
         public async Task<IEnumerable<Board>> GetBoardsAsync()
         {
-            //var specification = new GetBoardsSpecification();
-            return await _BoardRepository.GetAllAsync();
+            return await _BoardRepository.GetWithItemsAsync();
         }
-
-        //public async Task CompleteBoardAsync(int userId, int BoardId)
-        //{
-        //    var item = await _BoardRepository.GetByIdAsync(BoardId);
-
-        //    if (item is null)
-        //    {
-        //        throw new System.Exception();
-        //    }
-
-        //    if (item.UserId != userId)
-        //    {
-        //        throw new System.Exception();
-        //    }
-
-        //    item.IsCompleted = true;
-        //    await _BoardRepository.UpdateAsync(item);
-        //    await _BoardRepository.UnitOfWork.SaveChangesAsync();
-        //}
 
         public async Task<Board> CreateBoardAsync( string name, string description,int userId)
         {
-            //var user = await _UserRepository.GetSingleAsync(new GetUserSpecification(userId) );
-            var user = await _UserRepository.GetByIdAsync(userId);
-            if (user is null)
-            {
-                throw new System.Exception();// гозирага
-            }
-            BoardMember boardMember = new BoardMember(user, Role.Admin);
+            BoardMember boardMember = new BoardMember(userId, Role.Admin);
             var item = new Board(name, description, boardMember);
-            //_UserRepository.Entry<Store>(s1).State = EntityState.Detached;
             var insertedItem = await _BoardRepository.InsertAsync(item);
             await _BoardRepository.UnitOfWork.SaveChangesAsync();
 
             return insertedItem;
+        }
+
+        public async Task<Board> GetBoardAsync(int boardId)
+        {
+               return await _BoardRepository.GetByIdAsync(boardId);
+        }
+
+        public async Task DeleteBoard(int boardId)
+        {
+            Board board = await _BoardRepository.GetByIdAsync(boardId);
+            Guard.Against.NullObject(boardId, board, "Board");
+
+            await _BoardRepository.DeleteByIdAsync(boardId);
+        }
+
+        public async Task<IEnumerable<BoardMember>> GetMembershipOfMemberOnBoard(int boardId)
+        {
+            Board board = await _BoardRepository.GetByIdAsync(boardId);
+            Guard.Against.NullObject(boardId, board, "Board"); 
+            
+            return board.BoardMembers;
+        }
+
+        public async Task AddMemberToBoard(int userId, int boardId, Role role)
+        {
+
+            Board board = await _BoardRepository.GetByIdAsync(boardId);
+            Guard.Against.NullObject(boardId, board, "Board");
+
+            User user = await _UserRepository.GetByIdAsync(userId);
+            Guard.Against.NullObject(userId, user, "User");
+            Guard.Against.CheckMemebershipBoard(userId, board);
+                
+            BoardMember boardMember = new BoardMember(userId, role);
+            board.BoardMembers.Add(boardMember);
+
+            await _BoardRepository.UpdateAsync(board);
+            await _BoardRepository.UnitOfWork.SaveChangesAsync();
+
+        }
+
+        public async Task RemoveMemberFromBoard(int memberId, int boardId)
+        {
+            Board board = await _BoardRepository.GetByIdAsync(boardId);
+            Guard.Against.NullObject(boardId, board, "Board");
+
+            BoardMember boardMember = board.BoardMembers.FirstOrDefault(bm => bm.Id == memberId);
+            Guard.Against.NullObject(memberId, boardMember, "BoardMember");
+
+            board.BoardMembers.Remove(boardMember);
+
+            await _BoardRepository.UpdateAsync(board);
+            await _BoardRepository.UnitOfWork.SaveChangesAsync();
+
+        }
+
+        public async Task UpdateMembershipOfMemberOnBoard(int boardId, int memberId, Role newRole)
+        {
+            Board board = await _BoardRepository.GetByIdAsync(boardId);
+            Guard.Against.NullObject(boardId, board, "Board");
+
+            BoardMember boardMember = board.BoardMembers.FirstOrDefault(bm => bm.Id == memberId);
+            Guard.Against.NullObject(memberId, boardMember, "BoardMember");
+
+            boardMember.Role = newRole;
+        
+            await _BoardRepository.UpdateAsync(board);
+            await _BoardRepository.UnitOfWork.SaveChangesAsync();
         }
     }
 }

@@ -51,6 +51,12 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
             return Task.CompletedTask;
         }
 
+        public async Task DeleteByIdAsync(TKey id)
+        {
+            var item = await _dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
+            _context.Remove(item);
+            await _context.SaveChangesAsync();          
+        }
         public async Task<T> GetSingleAsync(ISpecification<T> specification)
         {
             return await ApplySpecification(specification).FirstOrDefaultAsync();
