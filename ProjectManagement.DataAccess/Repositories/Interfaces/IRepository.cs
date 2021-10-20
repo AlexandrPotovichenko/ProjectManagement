@@ -13,6 +13,8 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
         Task<T> InsertAsync(T item);
         Task UpdateAsync(T item);
         Task DeleteAsync(T item);
+        Task DeleteByIdAsync(TKey id);
+
         Task<T> GetSingleAsync(ISpecification<T> specification);
         Task<IEnumerable<T>> GetManyAsync(ISpecification<T> specification);
     }

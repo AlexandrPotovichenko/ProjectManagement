@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using ProjectManagement.BusinessLogic.Services.Interfaces;
 using ProjectManagement.BusinessLogic.Specifications;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
@@ -9,69 +11,35 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 {
     public class CheckListService : ICheckListService
     {
-        private readonly ICheckListRepository _CheckListRepository;
-        private readonly ICardRepository _CardRepository;
+        private readonly ICheckListRepository _checkListRepository;
+        private readonly ICardRepository _cardRepository;
 
-        public CheckListService(ICheckListRepository CheckListRepository)
+        public CheckListService(ICheckListRepository CheckListRepository, ICardRepository cardRepository)
         {
-            _CheckListRepository = CheckListRepository;
+            _checkListRepository = CheckListRepository;
+            _cardRepository = cardRepository;
         }
-
-        //public async Task<IEnumerable<CheckListItem>> GetCompletedCheckListItemsAsync(int userId)
-        //{
-        //    var specification = new GetCompletedCheckListItemsOfUserSpecification(userId);
-        //    return await _CheckListItemRepository.GetManyAsync(specification);
-        //}
 
         public async Task<IEnumerable<CheckListItem>> GetCheckListItemsAsync(int checkListId)
         {
             var specification = new GetCheckListItemsOfCheckListSpecification(checkListId);
-            CheckList checkList = await _CheckListRepository.GetByIdAsync(checkListId);
+            CheckList checkList = await _checkListRepository.GetByIdAsync(checkListId);
             return checkList.ChecklistItems;
         }
-
-        //public async Task CompleteCheckListItemAsync(int userId, int CheckListItemId)
-        //{
-        //    var item = await _CheckListItemRepository.GetByIdAsync(CheckListItemId);
-
-        //    if (item is null)
-        //    {
-        //        throw new System.Exception();
-        //    }
-
-        //    if (item.UserId != userId)
-        //    {
-        //        throw new System.Exception();
-        //    }
-
-        //    item.IsCompleted = true;
-        //    await _CheckListItemRepository.UpdateAsync(item);
-        //    await _CheckListItemRepository.UnitOfWork.SaveChangesAsync();
-        //}
 
         public async Task<CheckListItem> AddCheckListItemAsync(int checkListId,string name)
         {
 
-            var item = await _CheckListRepository.GetByIdAsync(checkListId);
+            CheckList checkList = await _checkListRepository.GetByIdAsync(checkListId);
+            Guard.Against.NullObject(checkListId, checkList, "CheckList");
 
-            if (item is null)
-            {
-                throw new System.Exception();// гозирага
-            }
+            var item = await _checkListRepository.GetByIdAsync(checkListId);
+          
             CheckListItem checkListItem = new CheckListItem(name);
             item.ChecklistItems.Add(checkListItem);
-            //    if (item.UserId != userId)
-            //    {
-            //        throw new System.Exception();
-            //    }
 
-            //    item.IsCompleted = true;
-            //    await _CheckListItemRepository.UpdateAsync(item);
-            //    await _CheckListItemRepository.UnitOfWork.SaveChangesAsync();
-     
-
-            await _CheckListRepository.UpdateAsync(item);
-            await _CheckListRepository.UnitOfWork.SaveChangesAsync();
+            await _checkListRepository.UpdateAsync(item);
+            await _checkListRepository.UnitOfWork.SaveChangesAsync();
 
             return checkListItem;
         }
@@ -79,21 +47,42 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         public async Task<CheckList> CreateCheckListAsync(int cardId, string name)
         {
 
-            var card = await _CardRepository.GetByIdAsync(cardId);
-            if (card is null)
-            {
-                throw new System.Exception();// гозирага
-            }
+            Card card = await _cardRepository.GetByIdAsync(cardId);
+            Guard.Against.NullObject(cardId, card, "Card");
+
             CheckList checkList = new CheckList(name);
 
             card.CheckLists.Add(checkList);
 
-            await _CardRepository.UpdateAsync(card);
-
-            await _CardRepository.UnitOfWork.SaveChangesAsync();
+            await _cardRepository.UpdateAsync(card);
+            await _cardRepository.UnitOfWork.SaveChangesAsync();
 
             return checkList;
 
         }
+
+        public async Task DeleteCheckListItemAsync(int checkListId, int checkListItemId)
+        {
+            CheckList checkList = await _checkListRepository.GetByIdAsync(checkListId);
+            Guard.Against.NullObject(checkListId, checkList, "CheckList");
+
+            CheckListItem checkListItem = checkList.ChecklistItems.FirstOrDefault(cli => cli.Id == checkListItemId);
+            Guard.Against.NullObject(checkListItemId, checkListItem, "ChecklistItem");
+
+            checkList.ChecklistItems.Remove(checkListItem);
+
+            await _checkListRepository.UpdateAsync(checkList);
+            await _checkListRepository.UnitOfWork.SaveChangesAsync();
+
+        }
+
+        public async Task DeleteCheckListAsync(int checkListId)
+        {
+            CheckList checkList = await _checkListRepository.GetByIdAsync(checkListId);
+            Guard.Against.NullObject(checkListId, checkList, "CheckList");
+            await _checkListRepository.DeleteAsync(checkList);
+        }
+
+ 
     }
 }

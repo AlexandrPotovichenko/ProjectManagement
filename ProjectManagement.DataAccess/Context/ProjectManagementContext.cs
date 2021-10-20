@@ -15,7 +15,7 @@ namespace ProjectManagement.DataAccess.Context
 
         public ProjectManagementContext(DbContextOptions<ProjectManagementContext> options) : base(options)
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
@@ -26,11 +26,17 @@ namespace ProjectManagement.DataAccess.Context
             modelBuilder.Entity<Board>(b =>
             {
                 b.HasKey(x => x.Id);
-                b.HasMany(x => x.Lists);
-                b.HasMany(x => x.BoardMembers);
+                b.HasMany(x => x.Lists).WithOne(x=>x.Board);
+                b.HasMany(x => x.BoardMembers).WithOne(x=>x.Board);
                 b.Property(x => x.Name);
             });
-
+            //modelBuilder.Entity<Card>(b =>
+            //{
+            //    b.HasKey(x => x.Id);
+            //    b.HasOne(x => x.List).WithMany(x => x.Cards).HasForeignKey(x => x.ListId);
+   
+            //});
+            
             //modelBuilder.Entity<CheckListItem>(b =>
             //{
             //    b.HasKey(x => x.Id);
@@ -47,10 +53,10 @@ namespace ProjectManagement.DataAccess.Context
             //    b.HasKey(x => x.Id);
             //});
             modelBuilder.Entity<User>().HasKey(t => t.Id);
-            modelBuilder.Entity<User>().HasData(
+            //modelBuilder.Entity<User>().HasData(
             
-                new User {Id=1,  Name= "John Doe" }
-            );
+            //    new User {Id=1,  Name= "John Doe" }
+            //);
         }
     }
 }

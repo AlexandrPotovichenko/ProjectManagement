@@ -13,7 +13,7 @@ using ProjectManagement.Dto;
 
 namespace ProjectManagement.Controllers
 {
-    [Route("api/check_lists")]
+    [Route("api/checkLists")]
     [ApiController]
     public class CheckListController : ControllerBase
     {
@@ -28,27 +28,27 @@ namespace ProjectManagement.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<CheckListItemDto>>> GetItemsAsync()
+        public async Task<ActionResult<IEnumerable<CheckListItemDto>>> GetItemsAsync(int checkListId)
         {
-            var items = await _CheckListService.GetCheckListItemsAsync(UserId);
+            var items = await _CheckListService.GetCheckListItemsAsync(checkListId);
 
             var result = _mapper.Map<IEnumerable<CheckListItemDto>>(items);
 
             return Ok(result);
         }
 
-        //[HttpGet("completed")]
-        //[Authorize]
-        //public async Task<ActionResult<IEnumerable<GetCheckListItemDto>>> GetCompletedItemsAsync()
-        //{
-        //    var items = await _toCheckListItemService.GetCompletedItemsAsync(UserId);
 
-        //    var result = _mapper.Map<IEnumerable<GetCheckListItemDto>>(items);
+        [HttpPost("CreateCheckList")]
+        [Authorize]
+        public async Task<ActionResult<CheckListDto>> CreateCheckListAsync([FromBody] CheckListDto itemDto)
+        {
+            var item = await _CheckListService.CreateCheckListAsync(itemDto.CardId, itemDto.Name);
+            var result = _mapper.Map<CheckListDto>(item);
 
-        //    return Ok(result);
-        //}
+            return Ok(result);
+        }
 
-        [HttpPost]
+        [HttpPost("CreateCheckListItem")]
         [Authorize]
         public async Task<ActionResult<CheckListItemDto>> CreateCheckListItemAsync([FromBody] CheckListItemDto itemDto)
         {
