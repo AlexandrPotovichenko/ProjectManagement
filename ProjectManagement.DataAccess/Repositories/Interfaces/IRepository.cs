@@ -1,11 +1,10 @@
 ﻿using Ardalis.Specification;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ProjectManagement.Domain.Interfaces;
 
 namespace ProjectManagement.DataAccess.Repositories.Interfaces
 {
-    public interface IRepository<T, TKey> where T : Domain.Interfaces.IEntity<TKey>
+    public interface IRepository<T, TKey> where T : ProjectManagement.Domain.Interfaces.IEntity<TKey>
     {
         IUnitOfWork UnitOfWork { get; }
         Task<T> GetByIdAsync(TKey id);

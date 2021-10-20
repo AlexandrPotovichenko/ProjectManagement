@@ -11,6 +11,7 @@ namespace ProjectManagement.Profiles
             CreateMap<Board, BoardDto>();
             CreateMap<List, ListDto>();
             CreateMap<Card, CardDto>();
+            CreateMap<CardAction, CardActionDto>();
             CreateMap<CheckList, CheckListDto>();
             CreateMap<CheckListItem, CheckListItemDto>();
             

@@ -9,7 +9,7 @@ using ProjectManagement.BusinessLogic.Services.Interfaces;
 using ProjectManagement.Domain.Models;
 using ProjectManagement.Dto;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
 
 namespace ProjectManagement.Controllers
 {
@@ -26,9 +26,40 @@ namespace ProjectManagement.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
+        [HttpPost("CreateCheckList")]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<CheckListItemDto>>> GetItemsAsync(int checkListId)
+        public async Task<ActionResult<CheckListDto>> CreateCheckListAsync([FromBody] PostCheckListDto itemDto)
+        {
+            var item = await _CheckListService.CreateCheckListAsync(itemDto.CardId, itemDto.Name);
+            var result = _mapper.Map<CheckListDto>(item);
+
+            return Ok(result);
+        }
+        [HttpPost("CreateCheckListItem")]
+        [Authorize]
+        public async Task<ActionResult<CheckListItemDto>> CreateCheckListItemAsync([FromBody] PostCheckListItemDto itemDto)
+        {
+            var item = await _CheckListService.AddCheckListItemToListAsync(itemDto.CheckListId, itemDto.Name);
+            var result = _mapper.Map<CheckListItemDto>(item);
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("api/checkLists/{cardId}")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<CheckListDto>>> CheckListsAsync(int cardId)
+        {
+            var items = await _CheckListService.GetCheckListsAsync(cardId);
+
+            var result = _mapper.Map<IEnumerable<CheckListDto>>(items);
+
+            return Ok(result);
+        }
+
+        [HttpGet("api/checkLists/CheckListItems/{checkListId}")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<CheckListItemDto>>> CheckListItemsAsync(int checkListId)
         {
             var items = await _CheckListService.GetCheckListItemsAsync(checkListId);
 
@@ -37,37 +68,30 @@ namespace ProjectManagement.Controllers
             return Ok(result);
         }
 
-
-        [HttpPost("CreateCheckList")]
+        [HttpPut]
         [Authorize]
-        public async Task<ActionResult<CheckListDto>> CreateCheckListAsync([FromBody] CheckListDto itemDto)
+        public async Task<ActionResult> CompleteCheckListItemAsync(int checkListId, int checkListItemId)
         {
-            var item = await _CheckListService.CreateCheckListAsync(itemDto.CardId, itemDto.Name);
-            var result = _mapper.Map<CheckListDto>(item);
-
-            return Ok(result);
+            await _CheckListService.CompleteCheckListItemAsync(checkListId,checkListItemId);
+            return Ok();
         }
-
-        [HttpPost("CreateCheckListItem")]
+        [HttpDelete("api/checkLists/{checkListId}")]
         [Authorize]
-        public async Task<ActionResult<CheckListItemDto>> CreateCheckListItemAsync([FromBody] CheckListItemDto itemDto)
+        public async Task<ActionResult> DeleteCheckListAsync(int checkListId)
         {
-            var item = await _CheckListService.AddCheckListItemAsync(itemDto.CheckListId, itemDto.Name);
-            var result = _mapper.Map<CheckListItemDto>(item);
+            await _CheckListService.DeleteCheckListAsync(checkListId);
 
-            return Ok(result);
+            return Ok();
         }
+        [HttpDelete("api/checkLists/CheckListItems/{checkListItemId}")]
+        [Authorize]
+        public async Task<ActionResult> DeleteCheckListItemAsync(int checkListId, int checkListItemId)
+        {
+            await _CheckListService.DeleteCheckListItemAsync(checkListId, checkListItemId);
 
-        //[HttpPut("{id}")]
-        //[Authorize]
-        //public async Task<ActionResult> CompleteItemAsync(int id)
-        //{
-        //    await _toDoItemService.CompleteToDoItemAsync(UserId, id);
-
-        //    return Ok();
-        //}
-
-
-        private int UserId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok();
+        }
+ 
+        //private int UserId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
     }
 }

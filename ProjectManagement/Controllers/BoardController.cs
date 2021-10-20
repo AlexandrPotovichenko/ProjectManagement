@@ -2,14 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using ProjectManagement.BusinessLogic.Services.Interfaces;
 using ProjectManagement.Domain.Models;
 using ProjectManagement.Dto;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ProjectManagement.Controllers
 {
@@ -26,48 +23,70 @@ namespace ProjectManagement.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
+        [HttpGet("GetBoards")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<BoardDto>>> GetBoardsAsync()
         {
             var items = await _BoardService.GetBoardsAsync();
-
             var result = _mapper.Map<IEnumerable<BoardDto>>(items);
 
             return Ok(result);
         }
 
-        //[HttpGet("completed")]
-        //[Authorize]
-        //public async Task<ActionResult<IEnumerable<GetBoardDto>>> GetCompletedItemsAsync()
-        //{
-        //    var items = await _toBoardService.GetCompletedItemsAsync(UserId);
+        [HttpGet("GetBoard")]
+        [Authorize]
+        public async Task<ActionResult<BoardDto>> GetBoardAsync(int boardId)
+        {
+            Board board = await _BoardService.GetBoardAsync(boardId);
+            var result = _mapper.Map<BoardDto>(board);
 
-        //    var result = _mapper.Map<IEnumerable<GetBoardDto>>(items);
+            return Ok(result);
+        }
 
-        //    return Ok(result);
-        //}
 
-        [HttpPost]
+        [HttpPost("CreateBoard")]
         [Authorize]
         public async Task<ActionResult<BoardDto>> CreateBoardAsync([FromBody] PostBoardDto itemDto)
         {
-            var item = await _BoardService.CreateBoardAsync(itemDto.Name,itemDto.Description, UserId);
+            var item = await _BoardService.CreateBoardAsync(itemDto.Name,itemDto.Description);
             var result = _mapper.Map<BoardDto>(item);
 
             return Ok(result);
         }
 
-        //[HttpPut("{id}")]
-        //[Authorize]
-        //public async Task<ActionResult> CompleteItemAsync(int id)
-        //{
-        //    await _toDoItemService.CompleteToDoItemAsync(UserId, id);
+        [HttpPut("AddMemberToBoard")]
+        [Authorize]
+        public async Task<ActionResult<BoardMemberDto>> AddMemberToBoardAsync([FromBody] PostBoardMemberDto itemDto)
+        {
+            var item = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,itemDto.BoardId,itemDto.Role);
+            var result = _mapper.Map<BoardMemberDto>(item);
 
-        //    return Ok();
-        //}
+            return Ok(result);
+        }
 
+        [HttpPut("UpdateMembership")]
+        [Authorize]
+        public async Task<ActionResult> UpdateMembershipAsync(int boardId,int memberId,Role newRole)
+        {
+            await _BoardService.UpdateMembershipOfMemberOnBoardAsync(boardId,memberId,newRole);
+            return Ok();
+        }
 
-        private int UserId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        [HttpDelete("RemoveMemberFromBoard")]
+        [Authorize]
+        public async Task<ActionResult> RemoveMemberFromBoardAsync(int memberId,int boardId)
+        {
+            await _BoardService.RemoveMemberFromBoardAsync(boardId, memberId);
+            return Ok();
+        }
+
+        [HttpDelete("DeleteComment")]
+        [Authorize]
+        public async Task<ActionResult> DeleteCommentOnCardAsync(int boardId)
+        {
+            await _BoardService.DeleteBoardAsync(boardId);
+            return Ok();
+        }
+
     }
 }

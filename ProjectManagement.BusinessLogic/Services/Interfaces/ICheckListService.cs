@@ -7,8 +7,13 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
     public interface ICheckListService
     {
         Task<CheckList> CreateCheckListAsync(int cardId, string name);
+        Task<CheckListItem> AddCheckListItemToListAsync(int checkListId, string name);
+
         Task<IEnumerable<CheckListItem>> GetCheckListItemsAsync(int checkListId);
-        Task<CheckListItem> AddCheckListItemAsync(int checkListId, string name);
+        Task<IEnumerable<CheckList>> GetCheckListsAsync(int cardId);
+
+        Task CompleteCheckListItemAsync(int checkListId, int checkListItemId);
+
         Task DeleteCheckListItemAsync(int checkListId, int checkListItemId);
         Task DeleteCheckListAsync(int checkListId);
         

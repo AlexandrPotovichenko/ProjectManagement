@@ -10,5 +10,8 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
     public interface IUserRepository : IRepository<User, int>
     {
         Task<User> GetByNameAsync(string name);
+        Task<bool> UserExistsAsync(int userId);
+        //Task<string> GetUserByIdAsync(int userId);
+
     }
 }

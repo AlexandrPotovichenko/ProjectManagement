@@ -1,17 +1,14 @@
 ﻿
-//using Microsoft.eShopWeb.ApplicationCore.Exceptions;
-using ProjectManagement.BusinessLogic.Exceptions;
 using ProjectManagement.Domain.Models;
-using System.Collections.Generic;
 using System.Linq;
+using Ardalis.GuardClauses;
 
-namespace Ardalis.GuardClauses
+namespace ProjectManagement.BusinessLogic.Exceptions
 {
-    public static class BoardGuards
+    public static class GuardExtensions
     {
         public static void NullObject(this IGuardClause guardClause, int ObjectId, object obj,string objName)
         {
-            objName = obj.GetType().FullName;
             if (obj == null)
                 throw new ObjectNotFoundException(ObjectId, objName);
         }
@@ -24,15 +21,10 @@ namespace Ardalis.GuardClauses
         }
         public static void CheckMemebershipCard(this IGuardClause guardClause, int UserId, Card card)
         {
-            CardMember cardMember = card.CardMembers.FirstOrDefault(bm => bm.UserId == UserId);
+            CardMember cardMember = card.CardMembers.FirstOrDefault(cm => cm.UserId == UserId);
             if (cardMember != null)
                 throw new MemberAlreadyExistsException($"a user with this ID ({cardMember.Id}) already exists on the board ", cardMember.Id);
         }
- 
-        //public static void MemberAlreadyExists(this IGuardClause guardClause, IReadOnlyCollection<BasketItem> basketItems)
-        //{
-        //    if (!basketItems.Any())
-        //        throw new EmptyBasketOnCheckoutException();
-        //}
+
     }
 }

@@ -7,7 +7,7 @@ namespace ProjectManagement.Domain.Models
         public int Id { get; set; }
 
         public string Name { get; set; }
-        public bool IsDone { get; set; }
+        public bool IsDone { get; set; } = false;
         public int CheckListId { get; set; } 
         public CheckList CheckList { get; set; }  
 

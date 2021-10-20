@@ -6,6 +6,7 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
 {
     public interface IBoardRepository : IRepository<Board, int>
     {
-        Task<IEnumerable<Board>> GetWithItemsAsync();
+        Task<IEnumerable<Board>> GetWithItemsAsync(int userId);
+        Task<Board> GetWithMembersAsync(int boardId);
     }
 }

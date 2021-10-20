@@ -9,7 +9,7 @@ using ProjectManagement.Domain.Interfaces;
 
 namespace ProjectManagement.DataAccess.Repositories.Implementation
 {
-    public class BaseRepository<T, TKey, TContext> : IRepository<T, TKey> 
+    public class BaseRepository<T, TKey, TContext> : IRepository<T, TKey>
         where T : class, Domain.Interfaces.IEntity<TKey>
         where TContext : DbContext, IUnitOfWork
     {

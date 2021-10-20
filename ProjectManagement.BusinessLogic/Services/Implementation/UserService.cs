@@ -19,19 +19,9 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             var user = await _UserRepository.GetByNameAsync(login);
             if (user is null)
             {
-                throw new System.Exception();// гозирага
+                throw new System.Exception();
             }
 
-            //if (login == "John Doe")
-            //{
-            //    return Task.FromResult(new User
-            //    {
-            //        Id = 1,
-            //        Name = login
-            //    });
-            //}
-
-            //return Task.FromResult((User)null);
             return user;
         }
 

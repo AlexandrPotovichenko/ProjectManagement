@@ -16,5 +16,16 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         {
             return await _dbSet.FirstOrDefaultAsync(x => x.Name == name);
         }
+
+        public async Task<bool> UserExistsAsync(int userId)
+        {
+            return await _dbSet.AnyAsync(u => u.Id == userId);
+        }
+        //public async Task<string> GetUserByIdAsync(int userId)
+        //{
+        //    string name = await _dbSet.FirstOrDefaultAsync(u => u.Id == userId);
+        //    return
+        //}
+        
     }
 }

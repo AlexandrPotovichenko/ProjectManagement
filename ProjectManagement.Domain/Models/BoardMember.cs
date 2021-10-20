@@ -15,5 +15,41 @@ namespace ProjectManagement.Domain.Models
             UserId = userId;
             Role = role;
         }
+
+        public bool CanRead
+        {
+            get {return true; }          
+        }
+        public bool CanUpdate
+        {
+            get
+            {
+                if (Role == Role.Normal || Role == Role.Admin)
+                    return true;
+                else
+                    return false;
+            }
+        }
+        public bool CanDelete
+        {
+            get
+            {
+                if (Role == Role.Admin)
+                    return true;
+                else
+                    return false;
+            }
+        }
+        public bool IsMemberAdmin
+        {
+            get
+            {
+                if (Role == Role.Admin)
+                    return true;
+                else
+                    return false;
+            }
+        }
+        
     }
 }

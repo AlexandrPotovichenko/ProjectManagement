@@ -7,12 +7,6 @@ namespace ProjectManagement.BusinessLogic.Specifications
     {
         private int userId;
 
-        //public GetUserSpecification()
-        //{
-
-        //    AddInclude(x => x.Group);
-        //}
-
         public GetUserSpecification(int userId)
         {
             this.userId = userId;

@@ -2,10 +2,9 @@
 
 namespace ProjectManagement.Dto
 {
-    public class CardMemberDto
+    public class PostCardMemberDto
     {
-        public int Id { get; set; }
-        public int userId { get; set; }
+        public int UserId { get; set; }
         public Role Role { get; set; }
         public int CardId { get; set; }
     }

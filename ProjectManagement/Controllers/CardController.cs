@@ -9,7 +9,6 @@ using ProjectManagement.BusinessLogic.Services.Interfaces;
 using ProjectManagement.Domain.Models;
 using ProjectManagement.Dto;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ProjectManagement.Controllers
 {
@@ -37,37 +36,72 @@ namespace ProjectManagement.Controllers
             return Ok(result);
         }
 
-        //[HttpGet("completed")]
-        //[Authorize]
-        //public async Task<ActionResult<IEnumerable<GetCardDto>>> GetCompletedItemsAsync()
-        //{
-        //    var items = await _toCardService.GetCompletedItemsAsync(UserId);
+        [HttpGet("{cardId}")]
+        [Authorize]
+        public async Task<ActionResult<CardDto>> GetCardAsync(int cardId)
+        {
+            Card card  = await _CardService.GetCardAsync(cardId);
 
-        //    var result = _mapper.Map<IEnumerable<GetCardDto>>(items);
+            var result = _mapper.Map<CardDto>(card);
 
-        //    return Ok(result);
-        //}
+            return Ok(result);
+        }
 
-        [HttpPost]
+        [HttpPost("CreateCard")]
         [Authorize]
         public async Task<ActionResult<CardDto>> CreateCardAsync([FromBody] PostCardDto itemDto)
         {
-            var item = await _CardService.CreateCardAsync(itemDto.Name,itemDto.Description,itemDto.ListId, UserId);
+            var item = await _CardService.CreateCardAsync(itemDto.Name,itemDto.Description,itemDto.ListId);
             var result = _mapper.Map<CardDto>(item);
 
             return Ok(result);
         }
 
-        //[HttpPut("{id}")]
-        //[Authorize]
-        //public async Task<ActionResult> CompleteItemAsync(int id)
-        //{
-        //    await _toDoItemService.CompleteToDoItemAsync(UserId, id);
+        
+        [HttpPut("AddMemberToCard")]
+        [Authorize]
+        public async Task<ActionResult<CardMemberDto>> AddMemberToCardAsync([FromBody] PostCardMemberDto itemDto)
+        {
+            var item = await _CardService.AddMemberToCardAsync(itemDto.UserId, itemDto.CardId, itemDto.Role);
+            var result = _mapper.Map<CardMemberDto>(item);
 
-        //    return Ok();
-        //}
+            return Ok(result);
+        }
 
+        [HttpPost("RemoveMemberFromCard")]
+        [Authorize]
+        public async Task<ActionResult> RemoveMemberFromCardAsync(int memberId, int CardId)
+        {
+            await _CardService.RemoveMemberFromCardAsync(memberId, CardId);
 
-        private int UserId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok();
+        }
+
+        [HttpPut("UpdateMembership")]
+        [Authorize]
+        public async Task<ActionResult> UpdateMembershipAsync(int CardId, int memberId, Role newRole)
+        {
+            await _CardService.UpdateMembershipOfMemberOnCardAsync(CardId, memberId, newRole);
+
+            return Ok();
+        }
+
+        [HttpPut("AddCommentToCard")]
+        [Authorize]
+        public async Task<ActionResult> AddCommentToCardAsync(int cardId, string comment)
+        {
+            await _CardService.AddNewCommentToCardAsync(cardId, comment);
+
+            return Ok();
+        }
+    
+        [HttpDelete("api/cards/Comments/{commentId}")]
+        [Authorize]
+        public async Task<ActionResult> DeleteCommentOnCardAsync(int cardId, int commentId)
+        {
+            await _CardService.DeleteCommentOnCardAsync(cardId, commentId);
+
+            return Ok();
+        }
     }
 }
