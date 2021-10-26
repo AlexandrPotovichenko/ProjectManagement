@@ -14,10 +14,16 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         {
             
         }
+
+        public async Task<CheckList> GetCheckListByCheckListItemId(int checkListItemId)
+        {
+            return await _context.CheckLists.Include(cl => cl.ChecklistItems).AsNoTracking().FirstOrDefaultAsync();
+        }
+
         public async Task<CheckList> GetWithItemsAsync(int checkListId)
             {
 
-                return await _context.CheckLists.Include(cl => cl.ChecklistItems).FirstOrDefaultAsync();
+                return await _context.CheckLists.Include(cl => cl.ChecklistItems).AsNoTracking().FirstOrDefaultAsync();
 
             }
     }

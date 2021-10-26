@@ -11,7 +11,5 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
     {
         Task<User> GetByNameAsync(string name);
         Task<bool> UserExistsAsync(int userId);
-        //Task<string> GetUserByIdAsync(int userId);
-
     }
 }

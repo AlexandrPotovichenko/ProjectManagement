@@ -6,7 +6,6 @@ namespace ProjectManagement.Dto
     {
         public int Id { get; set; }
         public int userId { get; set; }
-        public Role Role { get; set; }
-        public int CardId { get; set; }
+        public string Role { get; set; }
     }
 }

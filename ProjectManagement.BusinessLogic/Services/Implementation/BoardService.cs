@@ -53,7 +53,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
                 throw new Exception();
             }
 
-            return await _boardRepository.GetByIdAsync(boardId);
+            return await _boardRepository.GetWithItemsByIdAsync(boardId);
         }
 
         public async Task DeleteBoardAsync(int boardId)
@@ -64,7 +64,6 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new Exception();
             }
-            Board board = await GetBoardByIdAsync(boardId);
             await _boardRepository.DeleteByIdAsync(boardId);
         }
 
@@ -89,31 +88,32 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
                 throw new Exception();
             }
 
-            Board board = await GetBoardByIdAsync(boardId);
+            Board board = await _boardRepository.GetForEditByIdAsync(boardId);
 
             User user = await _userRepository.GetByIdAsync(newMemberUserId);
             Guard.Against.NullObject(newMemberUserId, user, "User");
             Guard.Against.CheckMemebershipBoard(newMemberUserId, board);
-            //GetMemberByUserIdAsync(boardId, newMemberUserId)
           BoardMember newBoardMember = new BoardMember(newMemberUserId, role);
 
             board.BoardMembers.Add(newBoardMember);
-            //_boardMemberRepository.
+
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
             return newBoardMember;
         }
 
-        public async Task RemoveMemberFromBoardAsync(int boardId, int memberId)
+        public async Task RemoveMemberFromBoardAsync(int memberId)
         {
+            BoardMember boardMember = await _boardRepository.GetBoardMemberByIdAsync(memberId);
+
             int currentUserId = _userManager.GetCurrentUserId();
-            BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
-            if (!boardMember.IsMemberAdmin)
+            BoardMember currentBoardMember = await GetMemberByUserIdAsync(boardMember.BoardId, currentUserId);
+            if (!currentBoardMember.IsMemberAdmin)
             {
                 throw new Exception();
             }
 
-            Board board = await GetBoardByIdAsync(boardId);
+            Board board = await _boardRepository.GetForEditByIdAsync(boardMember.BoardId);
             BoardMember removableBoardMember = GetBoardMemberByMemberId(board, memberId);
 
             board.BoardMembers.Remove(removableBoardMember);
@@ -132,7 +132,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
                 throw new Exception();
             }
 
-            Board board = await GetBoardByIdAsync(boardId);
+            Board board = await _boardRepository.GetForEditByIdAsync(boardId);
             BoardMember editableBoardMember = GetBoardMemberByMemberId(board, memberId);
 
             editableBoardMember.Role = newRole;

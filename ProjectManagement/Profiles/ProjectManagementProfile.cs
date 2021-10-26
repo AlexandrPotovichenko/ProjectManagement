@@ -10,17 +10,16 @@ namespace ProjectManagement.Profiles
         {
             CreateMap<Board, BoardDto>();
             CreateMap<List, ListDto>();
-            CreateMap<Card, CardDto>();
+            CreateMap<Card, CardDto>().ForMember(dest => dest.ListName, act => act.MapFrom(src => src.List.Name)) ; 
+            CreateMap<Card, CardOnListDto>(); 
             CreateMap<CardAction, CardActionDto>();
+            CreateMap<CardAction, CardActionOnCardDto>();
             CreateMap<CheckList, CheckListDto>();
+            CreateMap<CheckList, CheckListOnCardDto>();
             CreateMap<CheckListItem, CheckListItemDto>();
-            
-            
-           
-            
+
             CreateMap<BoardMember, BoardMemberDto>();
             CreateMap<CardMember, CardMemberDto>();
-            //.ReverseMap().ForMember(a => a.Lists, a => a.Ignore()); 
         }
     }
 }

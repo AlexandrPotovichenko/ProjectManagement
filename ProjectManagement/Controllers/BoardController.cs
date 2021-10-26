@@ -58,7 +58,7 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult<BoardMemberDto>> AddMemberToBoardAsync([FromBody] PostBoardMemberDto itemDto)
         {
-            var item = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,itemDto.BoardId,itemDto.Role);
+            var item = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,itemDto.BoardId, itemDto.Role);
             var result = _mapper.Map<BoardMemberDto>(item);
 
             return Ok(result);
@@ -66,9 +66,9 @@ namespace ProjectManagement.Controllers
 
         [HttpPut("UpdateMembership")]
         [Authorize]
-        public async Task<ActionResult> UpdateMembershipAsync(int boardId,int memberId,Role newRole)
+        public async Task<ActionResult> UpdateMembershipAsync([FromBody] UpdateMembershipDto itemDto)
         {
-            await _BoardService.UpdateMembershipOfMemberOnBoardAsync(boardId,memberId,newRole);
+            await _BoardService.UpdateMembershipOfMemberOnBoardAsync(itemDto.boardId, itemDto.memberId, itemDto.newRole);
             return Ok();
         }
 
@@ -76,13 +76,13 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult> RemoveMemberFromBoardAsync(int memberId,int boardId)
         {
-            await _BoardService.RemoveMemberFromBoardAsync(boardId, memberId);
+            await _BoardService.RemoveMemberFromBoardAsync(memberId);
             return Ok();
         }
 
-        [HttpDelete("DeleteComment")]
+        [HttpDelete("DeleteBoard")]
         [Authorize]
-        public async Task<ActionResult> DeleteCommentOnCardAsync(int boardId)
+        public async Task<ActionResult> DeleteBoardAsync(int boardId)
         {
             await _BoardService.DeleteBoardAsync(boardId);
             return Ok();

@@ -15,7 +15,6 @@ namespace ProjectManagement.Domain.Models
         public CheckList(string name)
         {
             Name = name;
-            //Card = card;
             ChecklistItems = new List<CheckListItem>();
         }
     }

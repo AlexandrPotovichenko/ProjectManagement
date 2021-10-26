@@ -79,9 +79,9 @@ namespace ProjectManagement.Controllers
 
         [HttpPut("UpdateMembership")]
         [Authorize]
-        public async Task<ActionResult> UpdateMembershipAsync(int CardId, int memberId, Role newRole)
+        public async Task<ActionResult> UpdateMembershipAsync([FromBody] UpdateMembershipDto itemDto)
         {
-            await _CardService.UpdateMembershipOfMemberOnCardAsync(CardId, memberId, newRole);
+            await _CardService.UpdateMembershipOfMemberOnCardAsync(itemDto.boardId, itemDto.memberId, itemDto.newRole);
 
             return Ok();
         }
@@ -90,11 +90,27 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult> AddCommentToCardAsync(int cardId, string comment)
         {
-            await _CardService.AddNewCommentToCardAsync(cardId, comment);
+            await _CardService.AddCommentToCardAsync(cardId, comment);
 
             return Ok();
         }
-    
+
+        [HttpPut("MoveCardToList")]
+        [Authorize]
+        public async Task<ActionResult> MoveCardToList(int cardId, int newListId)
+        {
+            await _CardService.MoveCardToListAsync(cardId, newListId);
+            return Ok();
+        }
+
+        [HttpDelete("DeleteCard")]
+        [Authorize]
+        public async Task<ActionResult> DeleteCardAsync(int cardId)
+        {
+            await _CardService.DeleteCardAsync(cardId);
+            return Ok();
+        }
+
         [HttpDelete("api/cards/Comments/{commentId}")]
         [Authorize]
         public async Task<ActionResult> DeleteCommentOnCardAsync(int cardId, int commentId)
@@ -103,5 +119,7 @@ namespace ProjectManagement.Controllers
 
             return Ok();
         }
+
+        
     }
 }

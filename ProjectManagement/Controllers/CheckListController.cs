@@ -39,7 +39,7 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult<CheckListItemDto>> CreateCheckListItemAsync([FromBody] PostCheckListItemDto itemDto)
         {
-            var item = await _CheckListService.AddCheckListItemToListAsync(itemDto.CheckListId, itemDto.Name);
+            var item = await _CheckListService.AddCheckListItemToCheckListAsync(itemDto.CheckListId, itemDto.Name);
             var result = _mapper.Map<CheckListItemDto>(item);
 
             return Ok(result);
@@ -50,7 +50,7 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CheckListDto>>> CheckListsAsync(int cardId)
         {
-            var items = await _CheckListService.GetCheckListsAsync(cardId);
+            var items = await _CheckListService.GetCheckListsByCardIdAsync(cardId);
 
             var result = _mapper.Map<IEnumerable<CheckListDto>>(items);
 
@@ -68,14 +68,14 @@ namespace ProjectManagement.Controllers
             return Ok(result);
         }
 
-        [HttpPut]
+        [HttpPut("CompleteCheckListItem")]
         [Authorize]
-        public async Task<ActionResult> CompleteCheckListItemAsync(int checkListId, int checkListItemId)
+        public async Task<ActionResult> CompleteCheckListItemAsync(int checkListItemId)
         {
-            await _CheckListService.CompleteCheckListItemAsync(checkListId,checkListItemId);
+            await _CheckListService.CompleteCheckListItemAsync(checkListItemId);
             return Ok();
         }
-        [HttpDelete("api/checkLists/{checkListId}")]
+        [HttpDelete("DeleteCheckList")]
         [Authorize]
         public async Task<ActionResult> DeleteCheckListAsync(int checkListId)
         {
@@ -83,15 +83,14 @@ namespace ProjectManagement.Controllers
 
             return Ok();
         }
-        [HttpDelete("api/checkLists/CheckListItems/{checkListItemId}")]
+        [HttpDelete("DeleteCheckListItem")]
         [Authorize]
-        public async Task<ActionResult> DeleteCheckListItemAsync(int checkListId, int checkListItemId)
+        public async Task<ActionResult> DeleteCheckListItemAsync( int checkListItemId)
         {
-            await _CheckListService.DeleteCheckListItemAsync(checkListId, checkListItemId);
+            await _CheckListService.DeleteCheckListItemAsync(checkListItemId);
 
             return Ok();
         }
- 
-        //private int UserId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
     }
 }

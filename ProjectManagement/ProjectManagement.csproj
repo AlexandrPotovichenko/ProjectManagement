@@ -20,4 +20,8 @@
     <ProjectReference Include="..\ProjectManagement.DataAccess\ProjectManagement.DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
 </Project>

@@ -8,6 +8,8 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
     {
         Task<IEnumerable<Card>> GetWithItemsAsync(int userId);
         Task<Card> GetWithMembersAsync(int cardId);
-        Task<bool> CanCreateCardAsync(int boardId, int userId);
+        Task<Card> GetWithItemsByIdAsync(int cardId);
+        Task<Card> GetForEditByIdAsync(int cardId); 
+       Task<bool> CanCreateCardAsync(int boardId, int userId);
     }
 }

@@ -13,9 +13,9 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         public ListRepository(ProjectManagementContext context) : base(context)
         {
         }
-        //public async Task<IEnumerable<List>> GetWithItemsAsync(int userId)
-        //{
-        //    return await _context.Cards.Where(c => c.CardMembers.Any(cm => cm.UserId == userId)).Include(c => c.CardMembers).Include(c => c.CheckLists).Include(c => c.Actions).ToListAsync<Card>();
-        //}
+        public async Task<List> GetForEditByIdAsync(int listId)
+        {
+            return await _context.Lists.Where(l => l.Id == listId).Include(b => b.Cards).FirstOrDefaultAsync();
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
 
         Task<IEnumerable<BoardMember>> GetMembershipOfMemberOnBoardAsync(int boardId);
         Task<BoardMember> AddMemberToBoardAsync(int newMemberUserId, int boardId,Role role);
-        Task RemoveMemberFromBoardAsync(int boardId, int memberId);
+        Task RemoveMemberFromBoardAsync(int memberId);
         Task UpdateMembershipOfMemberOnBoardAsync(int boardId, int memberId, Role newRole);
 
     }

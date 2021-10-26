@@ -46,6 +46,7 @@ namespace ProjectManagement.DataAccess.Context
                 c.HasKey(x => x.Id);
                 c.HasMany(x => x.CheckLists).WithOne(x => x.Card);
                 c.HasMany(x => x.CardMembers).WithOne(x => x.Card);
+                c.HasMany(x => x.Actions).WithOne(x => x.Card);
                 c.Property(x => x.Name);
             });
 
@@ -61,6 +62,15 @@ namespace ProjectManagement.DataAccess.Context
 
                 new User { Id = 1, Name = "John Doe" }
             );
+
+            modelBuilder.Entity<CardAction>(ca =>
+            {
+                ca.HasKey(x => x.Id);
+                ca.Property(t => t.Date).HasColumnType("DateTime");
+
+            });
+
+           
         }
     }
 }

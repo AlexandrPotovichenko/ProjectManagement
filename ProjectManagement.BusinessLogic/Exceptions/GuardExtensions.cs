@@ -17,13 +17,13 @@ namespace ProjectManagement.BusinessLogic.Exceptions
         {
             BoardMember boardMember = board.BoardMembers.FirstOrDefault(bm => bm.UserId == UserId);
             if (boardMember!=null)
-                throw new MemberAlreadyExistsException($"a user with this ID ({boardMember.Id}) already exists on the board ", boardMember.Id);
+                throw new MemberAlreadyExistsException($"a board memeber with this ID ({boardMember.Id}) already exists on the board ", boardMember.Id);
         }
         public static void CheckMemebershipCard(this IGuardClause guardClause, int UserId, Card card)
         {
             CardMember cardMember = card.CardMembers.FirstOrDefault(cm => cm.UserId == UserId);
             if (cardMember != null)
-                throw new MemberAlreadyExistsException($"a user with this ID ({cardMember.Id}) already exists on the board ", cardMember.Id);
+                throw new MemberAlreadyExistsException($"a card memeber with this ID ({cardMember.Id}) already exists on the board ", cardMember.Id);
         }
 
     }
