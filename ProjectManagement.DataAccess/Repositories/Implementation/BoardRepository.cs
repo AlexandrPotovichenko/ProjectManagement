@@ -17,7 +17,6 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         {
             return await _context.Boards.Where(b => b.BoardMembers.Any(bm => bm.UserId == userId)).Include(b => b.BoardMembers).Include(b => b.Lists).ThenInclude(l => l.Cards).AsNoTracking().ToListAsync<Board>();
         }
-
         public async Task<Board> GetWithItemsByIdAsync(int boardId)
         {
             return await _context.Boards.Where(b => b.Id == boardId).Include(b => b.BoardMembers).Include(b => b.Lists).ThenInclude(l => l.Cards).AsNoTracking().FirstOrDefaultAsync();
@@ -26,12 +25,10 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         {
             return await _context.Boards.Include(b => b.BoardMembers).AsNoTracking().FirstOrDefaultAsync();
         }
-
         public async Task<Board> GetForEditByIdAsync(int boardId)
         {
             return await _context.Boards.Where(b => b.Id == boardId).Include(b => b.BoardMembers).Include(b => b.Lists).ThenInclude(l => l.Cards).FirstOrDefaultAsync();
         }
-
         public async Task<BoardMember> GetBoardMemberByIdAsync(int boardMemberId)
         {
             return await _context.Boards.Where(b => b.BoardMembers.Any(bm => bm.Id == boardMemberId)).Select(b => b.BoardMembers.FirstOrDefault(bm => bm.Id == boardMemberId)).AsNoTracking().FirstOrDefaultAsync();

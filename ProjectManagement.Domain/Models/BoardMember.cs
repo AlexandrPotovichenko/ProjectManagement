@@ -15,7 +15,6 @@ namespace ProjectManagement.Domain.Models
             UserId = userId;
             Role = role;
         }
-
         public bool CanRead
         {
             get {return true; }          

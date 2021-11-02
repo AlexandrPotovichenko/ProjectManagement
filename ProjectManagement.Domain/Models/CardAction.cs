@@ -13,10 +13,8 @@ namespace ProjectManagement.Domain.Models
         public DateTime Date { get; set; }
         public string Description { get; set; }
         public bool IsComment { get; set; }
-
         public CardAction()
         {
-
         }
         public CardAction(int cardMemberId,string description,bool isComment=false)
         {
@@ -24,7 +22,6 @@ namespace ProjectManagement.Domain.Models
             Description = description;
             Date = DateTime.Now;
             IsComment = false;
-
         }
     }
 }

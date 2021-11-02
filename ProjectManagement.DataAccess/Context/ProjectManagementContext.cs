@@ -8,7 +8,6 @@ namespace ProjectManagement.DataAccess.Context
     public class ProjectManagementContext : DbContext, IUnitOfWork
     {
         public DbSet<User> Users { get; set; }
-     
         public DbSet<Board> Boards { get; set; } 
         public DbSet<List>Lists { get; set; }
         public DbSet<Card>Cards { get; set; }
@@ -17,13 +16,11 @@ namespace ProjectManagement.DataAccess.Context
         public DbSet<BoardMember>  BoardMembers { get; set; }
         public DbSet<CardMember> CardMembers { get; set; }
       
-
         public ProjectManagementContext(DbContextOptions<ProjectManagementContext> options) : base(options)
         {
             //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -49,28 +46,19 @@ namespace ProjectManagement.DataAccess.Context
                 c.HasMany(x => x.Actions).WithOne(x => x.Card);
                 c.Property(x => x.Name);
             });
-
             modelBuilder.Entity<CheckList>(cl =>
             {
                 cl.HasKey(x => x.Id);
                 cl.HasMany(x => x.ChecklistItems).WithOne(x => x.CheckList);
                 cl.Property(x => x.Name);
             });
-
             modelBuilder.Entity<User>().HasKey(t => t.Id);
-            modelBuilder.Entity<User>().HasData(
-
-                new User { Id = 1, Name = "John Doe" }
-            );
-
+            modelBuilder.Entity<User>().HasData(new User { Id = 1, Name = "John Doe" });
             modelBuilder.Entity<CardAction>(ca =>
             {
                 ca.HasKey(x => x.Id);
                 ca.Property(t => t.Date).HasColumnType("DateTime");
-
             });
-
-           
         }
     }
 }

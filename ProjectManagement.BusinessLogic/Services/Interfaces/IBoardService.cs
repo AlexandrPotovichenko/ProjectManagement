@@ -10,11 +10,9 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
         Task<Board> GetBoardAsync(int boardId);
         Task<IEnumerable<Board>> GetBoardsAsync();
         Task DeleteBoardAsync(int boardId);
-
         Task<IEnumerable<BoardMember>> GetMembershipOfMemberOnBoardAsync(int boardId);
         Task<BoardMember> AddMemberToBoardAsync(int newMemberUserId, int boardId,Role role);
         Task RemoveMemberFromBoardAsync(int memberId);
         Task UpdateMembershipOfMemberOnBoardAsync(int boardId, int memberId, Role newRole);
-
     }
 }

@@ -10,6 +10,6 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
         Task<Card> GetWithMembersAsync(int cardId);
         Task<Card> GetWithItemsByIdAsync(int cardId);
         Task<Card> GetForEditByIdAsync(int cardId); 
-       Task<bool> CanCreateCardAsync(int boardId, int userId);
+        Task<bool> CanCreateCardAsync(int boardId, int userId);
     }
 }

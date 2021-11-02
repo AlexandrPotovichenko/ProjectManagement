@@ -8,14 +8,10 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
     {
         Task<CheckList> CreateCheckListAsync(int cardId, string name);
         Task<CheckListItem> AddCheckListItemToCheckListAsync(int checkListId, string name);
-
         Task<IEnumerable<CheckListItem>> GetCheckListItemsAsync(int checkListId);
         Task<IEnumerable<CheckList>> GetCheckListsByCardIdAsync(int cardId);
-
-        Task CompleteCheckListItemAsync(int checkListItemId);
-
-        Task DeleteCheckListItemAsync(int checkListItemId);
+        Task CompleteCheckListItemAsync( int checkListId,int checkListItemId);
+        Task DeleteCheckListItemAsync(int checkListId, int checkListItemId);
         Task DeleteCheckListAsync(int checkListId);
-        
     }
 }

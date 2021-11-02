@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ProjectManagement.BusinessLogic.Exceptions;
 using ProjectManagement.BusinessLogic.Services.Interfaces;
-
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Domain.Models;
 using System.Linq;
@@ -26,7 +25,6 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             _userManager = userManager;
         }
 
-
         public async Task<IEnumerable<Board>> GetBoardsAsync()
         {
             int currentUserId = _userManager.GetCurrentUserId();
@@ -40,7 +38,6 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             var item = new Board(name, description, boardMember);
             var insertedItem = await _boardRepository.InsertAsync(item);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
-
             return insertedItem;
         }
 
@@ -52,7 +49,6 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new Exception();
             }
-
             return await _boardRepository.GetWithItemsByIdAsync(boardId);
         }
 
@@ -87,16 +83,12 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new Exception();
             }
-
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
-
             User user = await _userRepository.GetByIdAsync(newMemberUserId);
             Guard.Against.NullObject(newMemberUserId, user, "User");
             Guard.Against.CheckMemebershipBoard(newMemberUserId, board);
-          BoardMember newBoardMember = new BoardMember(newMemberUserId, role);
-
+            BoardMember newBoardMember = new BoardMember(newMemberUserId, role);
             board.BoardMembers.Add(newBoardMember);
-
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
             return newBoardMember;
@@ -105,22 +97,17 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         public async Task RemoveMemberFromBoardAsync(int memberId)
         {
             BoardMember boardMember = await _boardRepository.GetBoardMemberByIdAsync(memberId);
-
             int currentUserId = _userManager.GetCurrentUserId();
             BoardMember currentBoardMember = await GetMemberByUserIdAsync(boardMember.BoardId, currentUserId);
             if (!currentBoardMember.IsMemberAdmin)
             {
                 throw new Exception();
             }
-
             Board board = await _boardRepository.GetForEditByIdAsync(boardMember.BoardId);
             BoardMember removableBoardMember = GetBoardMemberByMemberId(board, memberId);
-
             board.BoardMembers.Remove(removableBoardMember);
-
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
-
         }
 
         public async Task UpdateMembershipOfMemberOnBoardAsync(int boardId, int memberId, Role newRole)
@@ -131,12 +118,9 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new Exception();
             }
-
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
             BoardMember editableBoardMember = GetBoardMemberByMemberId(board, memberId);
-
-            editableBoardMember.Role = newRole;
-        
+            editableBoardMember.Role = newRole;   
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
         }
@@ -157,8 +141,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         {
             var memberSpec = new GetBoardMemberByUserIdSpecification(userId, boardId);
             BoardMember boardMember = await _boardMemberRepository.GetSingleAsync(memberSpec);
-            Guard.Against.NullObject(userId, boardMember, "BoardMember");
-            
+            Guard.Against.NullObject(userId, boardMember, "BoardMember");        
             return boardMember;
         }
 

@@ -15,31 +15,25 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
     {
         protected readonly DbSet<T> _dbSet;
         protected readonly TContext _context;
-
         public BaseRepository(TContext context)
         {
             _dbSet = context.Set<T>();
             _context = context;
         }
-
         public IUnitOfWork UnitOfWork => _context;
-
         public async Task<T> GetByIdAsync(TKey id)
         {
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id.Equals(id));
         }
-
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
-
         public Task<T> InsertAsync(T item)
         {
             var entity = _dbSet.Add(item);
             return Task.FromResult(entity.Entity);
         }
-
         public Task UpdateAsync(T item)
         {
             _context.Entry(item).State = EntityState.Modified;
@@ -50,7 +44,6 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
             _dbSet.Remove(item);
             return Task.CompletedTask;
         }
-
         public async Task DeleteByIdAsync(TKey id)
         {
             var item = await _dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
@@ -61,12 +54,10 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         {
             return await ApplySpecification(specification).FirstOrDefaultAsync();
         }
-
         public async Task<IEnumerable<T>> GetManyAsync(ISpecification<T> specification)
         {
             return await ApplySpecification(specification).ToListAsync();
         }
-
         private IQueryable<T> ApplySpecification(ISpecification<T> specification)
         {
             var evaluator = new SpecificationEvaluator();

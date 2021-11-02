@@ -28,68 +28,47 @@ namespace ProjectManagement
         {
             Configuration = configuration;
         }
-
         public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ProjectManagementContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("ProjectManagement")));
-
             services.AddScoped<ICheckListRepository, CheckListRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IBoardRepository, BoardRepository>();
             services.AddScoped<ICardRepository, CardRepository>();
             services.AddScoped<IListRepository, ListRepository>();
-
-
-
             services.AddControllersWithViews()
             .AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-
-
             services.AddScoped<IBoardService, BoardService>(x =>
                         new BoardService(
                             x.GetRequiredService<IBoardRepository>(), x.GetRequiredService<IUserRepository>(),
-                            x.GetRequiredService<IBoardMemberRepository>(), x.GetRequiredService<IUserManager>())
-                        );
-
+                            x.GetRequiredService<IBoardMemberRepository>(), x.GetRequiredService<IUserManager>()));
             services.AddScoped<ICardService, CardService>(x =>
-            new CardService(
-                x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IListRepository>(),
-                x.GetRequiredService<ICardMemberRepository>(), x.GetRequiredService<IUserManager>()));
-
+                        new CardService(
+                            x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IListRepository>(),
+                            x.GetRequiredService<ICardMemberRepository>(), x.GetRequiredService<IUserManager>()));
             services.AddScoped<ICheckListService, CheckListService>(x =>
-                        new CheckListService(x.GetRequiredService<ICheckListRepository>(), 
-                        x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IUserManager>())
-                        );
-
+                        new CheckListService(x.GetRequiredService<ICheckListRepository>(),
+                        x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IUserManager>()));
             services.AddScoped<IBoardMemberRepository, BoardMemberRepository>(x =>
-                        new BoardMemberRepository(x.GetRequiredService<ProjectManagementContext>())
-                        );
+                        new BoardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
             services.AddScoped<ICardMemberRepository, CardMemberRepository>(x =>
-                                    new CardMemberRepository(x.GetRequiredService<ProjectManagementContext>())
-                                    );
-
+                        new CardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
             services.AddScoped<IUserManager, ProjectManagement.BusinessLogic.Services.Implementation.UserMananger>(x =>
-                         new UserMananger(
-                            x.GetRequiredService<IHttpContextAccessor>(), x.GetRequiredService<IUserRepository>())
-                        );
-
+                        new UserMananger(
+                            x.GetRequiredService<IHttpContextAccessor>(), x.GetRequiredService<IUserRepository>()));
             services.AddScoped<IUserService, UserService>();
             services.AddAuthentication("Basic")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
-
             services.AddControllers()
                 .AddFluentValidation(fvc =>
                 {
                     fvc.RegisterValidatorsFromAssemblyContaining<Startup>();
                 });
-
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectManagement", Version = "v1" });
@@ -119,9 +98,7 @@ namespace ProjectManagement
                     }
                 });
             });
-
             services.AddAutoMapper(typeof(ProjectManagementProfile));
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -133,15 +110,10 @@ namespace ProjectManagement
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProjectManagement v1"));
             }
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthentication();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

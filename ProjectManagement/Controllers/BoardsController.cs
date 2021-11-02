@@ -10,82 +10,78 @@ using ProjectManagement.Dto;
 
 namespace ProjectManagement.Controllers
 {
-    [Route("api/boards")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class BoardController : ControllerBase
+    public class BoardsController : ControllerBase
     {
         private readonly IBoardService _BoardService;
         private readonly IMapper _mapper;
 
-        public BoardController(IBoardService BoardService, IMapper mapper)
+        public BoardsController(IBoardService BoardService, IMapper mapper)
         {
             _BoardService = BoardService;
             _mapper = mapper;
         }
 
-        [HttpGet("GetBoards")]
+        
+        [HttpGet] // GET api/Boards
         [Authorize]
         public async Task<ActionResult<IEnumerable<BoardDto>>> GetBoardsAsync()
         {
             var items = await _BoardService.GetBoardsAsync();
             var result = _mapper.Map<IEnumerable<BoardDto>>(items);
-
             return Ok(result);
         }
-
-        [HttpGet("GetBoard")]
-        [Authorize]
+ 
+        [HttpGet("{boardId}")] // GET api/Boards/123
+        [Authorize] 
         public async Task<ActionResult<BoardDto>> GetBoardAsync(int boardId)
         {
             Board board = await _BoardService.GetBoardAsync(boardId);
             var result = _mapper.Map<BoardDto>(board);
-
             return Ok(result);
         }
 
-
-        [HttpPost("CreateBoard")]
+        [HttpPost("Create")]// POST api/Boards/Create
         [Authorize]
         public async Task<ActionResult<BoardDto>> CreateBoardAsync([FromBody] PostBoardDto itemDto)
         {
             var item = await _BoardService.CreateBoardAsync(itemDto.Name,itemDto.Description);
             var result = _mapper.Map<BoardDto>(item);
-
-            return Ok(result);
+            return Created("~api/Boards/"+result.Id, result);
         }
 
-        [HttpPut("AddMemberToBoard")]
+        [HttpPut("{boardId}/members/AddMember")]// POST api/Boards/123/members/AddMember
         [Authorize]
-        public async Task<ActionResult<BoardMemberDto>> AddMemberToBoardAsync([FromBody] PostBoardMemberDto itemDto)
+        public async Task<ActionResult<BoardMemberDto>> AddMemberToBoardAsync(int boardId, [FromBody] PostBoardMemberDto itemDto)
         {
-            var item = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,itemDto.BoardId, itemDto.Role);
+            var item = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,boardId, itemDto.Role);
             var result = _mapper.Map<BoardMemberDto>(item);
-
-            return Ok(result);
+            return Created("~api/Boards/" + boardId+"/members/"+result.Id, result);
         }
-
-        [HttpPut("UpdateMembership")]
+        [HttpPut("{boardId}/members/UpdateMember")] // PUT api/Boards/123/members/UpdateMember
         [Authorize]
-        public async Task<ActionResult> UpdateMembershipAsync([FromBody] UpdateMembershipDto itemDto)
+        public async Task<ActionResult> UpdateMembershipAsync(int boardId, [FromBody] UpdateMembershipDto itemDto)
         {
-            await _BoardService.UpdateMembershipOfMemberOnBoardAsync(itemDto.boardId, itemDto.memberId, itemDto.newRole);
+            await _BoardService.UpdateMembershipOfMemberOnBoardAsync(boardId, itemDto.memberId, itemDto.newRole);
             return Ok();
         }
 
-        [HttpDelete("RemoveMemberFromBoard")]
+        [HttpDelete("{boardId}/members/{memberId}")] // DELETE api/Boards/123/members/456
         [Authorize]
-        public async Task<ActionResult> RemoveMemberFromBoardAsync(int memberId,int boardId)
+        public async Task<ActionResult> RemoveMemberFromBoardAsync(int boardId, int memberId)
         {
             await _BoardService.RemoveMemberFromBoardAsync(memberId);
-            return Ok();
+            return NoContent();
         }
 
-        [HttpDelete("DeleteBoard")]
+
+        [HttpDelete("{boardId}")] // DELETE api/Boards/123
         [Authorize]
         public async Task<ActionResult> DeleteBoardAsync(int boardId)
         {
             await _BoardService.DeleteBoardAsync(boardId);
-            return Ok();
+            return NoContent();
         }
 
     }
