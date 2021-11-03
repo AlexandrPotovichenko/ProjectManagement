@@ -22,7 +22,6 @@ namespace ProjectManagement.Controllers
             _BoardService = BoardService;
             _mapper = mapper;
         }
-
         
         [HttpGet] // GET api/Boards
         [Authorize]
@@ -42,7 +41,7 @@ namespace ProjectManagement.Controllers
             return Ok(result);
         }
 
-        [HttpPost("Create")]// POST api/Boards/Create
+        [HttpPost]// POST api/Boards
         [Authorize]
         public async Task<ActionResult<BoardDto>> CreateBoardAsync([FromBody] PostBoardDto itemDto)
         {
@@ -51,7 +50,7 @@ namespace ProjectManagement.Controllers
             return Created("~api/Boards/"+result.Id, result);
         }
 
-        [HttpPut("{boardId}/members/AddMember")]// POST api/Boards/123/members/AddMember
+        [HttpPost("{boardId}/members")]// POST api/Boards/123/members
         [Authorize]
         public async Task<ActionResult<BoardMemberDto>> AddMemberToBoardAsync(int boardId, [FromBody] PostBoardMemberDto itemDto)
         {
@@ -59,11 +58,12 @@ namespace ProjectManagement.Controllers
             var result = _mapper.Map<BoardMemberDto>(item);
             return Created("~api/Boards/" + boardId+"/members/"+result.Id, result);
         }
-        [HttpPut("{boardId}/members/UpdateMember")] // PUT api/Boards/123/members/UpdateMember
+
+        [HttpPut("{boardId}/members/{int memberId}")] // PUT api/Boards/123/members/456
         [Authorize]
-        public async Task<ActionResult> UpdateMembershipAsync(int boardId, [FromBody] UpdateMembershipDto itemDto)
+        public async Task<ActionResult> UpdateMembershipAsync(int boardId, int memberId, [FromBody] UpdateMembershipDto itemDto)
         {
-            await _BoardService.UpdateMembershipOfMemberOnBoardAsync(boardId, itemDto.memberId, itemDto.newRole);
+            await _BoardService.UpdateMembershipOfMemberOnBoardAsync(boardId, memberId, itemDto.newRole);
             return Ok();
         }
 
@@ -75,7 +75,6 @@ namespace ProjectManagement.Controllers
             return NoContent();
         }
 
-
         [HttpDelete("{boardId}")] // DELETE api/Boards/123
         [Authorize]
         public async Task<ActionResult> DeleteBoardAsync(int boardId)
@@ -83,6 +82,5 @@ namespace ProjectManagement.Controllers
             await _BoardService.DeleteBoardAsync(boardId);
             return NoContent();
         }
-
     }
 }

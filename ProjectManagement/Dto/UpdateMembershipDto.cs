@@ -7,7 +7,6 @@ namespace ProjectManagement.Dto
 {
     public class UpdateMembershipDto
     {
-        public int memberId { get; set; }
         public Role newRole { get; set; }
     }
 }

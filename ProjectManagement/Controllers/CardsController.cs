@@ -42,7 +42,7 @@ namespace ProjectManagement.Controllers
             return Ok(result);
         }
 
-        [HttpPost("Create")] // POST api/Cards/Create
+        [HttpPost] // POST api/Cards
         [Authorize]
         public async Task<ActionResult<CardDto>> CreateCardAsync([FromBody] PostCardDto itemDto)
         {
@@ -51,7 +51,7 @@ namespace ProjectManagement.Controllers
             return Created("~api/Cards/" + result.Id, result);
         }
 
-        [HttpPut("{cardId}/members/AddMember")]// POST api/Cards/123/members/AddMember
+        [HttpPost("{cardId}/members")]// POST api/Cards/123/members
         [Authorize]
         public async Task<ActionResult<CardMemberDto>> AddMemberToCardAsync(int cardId,[FromBody] PostCardMemberDto itemDto)
         {
@@ -60,11 +60,11 @@ namespace ProjectManagement.Controllers
             return Created("~api/Cards/" + cardId + "/members/" + result.Id, result);
         }
 
-        [HttpPut("{cardId}/members/UpdateMember")] // PUT api/Cards/123/members/UpdateMember
+        [HttpPut("{cardId}/members/{memberId}")] // PUT api/Cards/123/members/456
         [Authorize]
-        public async Task<ActionResult> UpdateMembershipAsync(int cardId,[FromBody] UpdateMembershipDto itemDto)
+        public async Task<ActionResult> UpdateMembershipAsync(int cardId,int memberId,[FromBody] UpdateMembershipDto itemDto)
         {
-            await _CardService.UpdateMembershipOfMemberOnCardAsync(cardId, itemDto.memberId, itemDto.newRole);
+            await _CardService.UpdateMembershipOfMemberOnCardAsync(cardId, memberId, itemDto.newRole);
             return Ok();
         }
 
@@ -76,7 +76,7 @@ namespace ProjectManagement.Controllers
             return NoContent();
         }
 
-        [HttpPut("{cardId}/Comments/AddComment")] // PUT api/Cards/123/Comments/AddComment
+        [HttpPost("{cardId}/Comments")] // POST api/Cards/123/Comments/AddComment
         [Authorize]
         public async Task<ActionResult> AddCommentToCardAsync(int cardId, string comment)
         {
@@ -102,7 +102,7 @@ namespace ProjectManagement.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{cardId}/MoveToList")] // PUT api/Cards/123/MoveToList
+        [HttpPut("{cardId}/list")] // PUT api/Cards/123/List
         [Authorize]
         public async Task<ActionResult> MoveCardToList(int cardId, int newListId)
         {

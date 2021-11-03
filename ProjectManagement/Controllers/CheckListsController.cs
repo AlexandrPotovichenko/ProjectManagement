@@ -25,7 +25,7 @@ namespace ProjectManagement.Controllers
             _mapper = mapper;
         }
 
-        [HttpPost("Create")]// POST api/CheckLists/Create
+        [HttpPost]// POST api/CheckLists/Create
         [Authorize]
         public async Task<ActionResult<CheckListDto>> CreateCheckListAsync([FromBody] PostCheckListDto itemDto)
         {
@@ -33,7 +33,7 @@ namespace ProjectManagement.Controllers
             var result = _mapper.Map<CheckListDto>(item);
             return Created("~api/CheckLists/" + result.Id, result);
         }
-        [HttpPost("{checkListId}/CreateCheckListItem")]// POST api/CheckLists/123/CreateCheckListItem
+        [HttpPost("{checkListId}/CheckListItems")]// POST api/CheckLists/123/CheckListItems
         [Authorize]
         public async Task<ActionResult<CheckListItemDto>> CreateCheckListItemAsync(int checkListId,[FromBody] PostCheckListItemDto itemDto)
         {
