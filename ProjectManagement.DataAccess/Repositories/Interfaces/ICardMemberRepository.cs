@@ -9,6 +9,6 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
 {
     public interface ICardMemberRepository : IRepository<CardMember, int>
     {
-        //Task<User> GetByNameAsync(string name);
+
     }
 }
