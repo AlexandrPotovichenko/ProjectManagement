@@ -27,19 +27,17 @@ namespace ProjectManagement.Controllers
 
         [HttpPost]// POST api/CheckLists/Create
         [Authorize]
-        public async Task<ActionResult<CheckListDto>> CreateCheckListAsync([FromBody] PostCheckListDto itemDto)
+        public async Task<ActionResult> CreateCheckListAsync([FromBody] PostCheckListDto itemDto)
         {
-            var item = await _CheckListService.CreateCheckListAsync(itemDto.CardId, itemDto.Name);
-            var result = _mapper.Map<CheckListDto>(item);
-            return Created("~api/CheckLists/" + result.Id, result);
+            CheckList checkList = await _CheckListService.CreateCheckListAsync(itemDto.CardId, itemDto.Name);
+            return Created("~api/CheckLists/" + checkList.Id, checkList);
         }
         [HttpPost("{checkListId}/CheckListItems")]// POST api/CheckLists/123/CheckListItems
         [Authorize]
-        public async Task<ActionResult<CheckListItemDto>> CreateCheckListItemAsync(int checkListId,[FromBody] PostCheckListItemDto itemDto)
+        public async Task<ActionResult> CreateCheckListItemAsync(int checkListId,[FromBody] PostCheckListItemDto itemDto)
         {
-            var item = await _CheckListService.AddCheckListItemToCheckListAsync(checkListId, itemDto.Name);
-            var result = _mapper.Map<CheckListItemDto>(item);
-            return Created("~api/CheckLists/" + checkListId+ "/CheckListItems/" + result.Id, result);
+            CheckListItem checkListItem = await _CheckListService.AddCheckListItemToCheckListAsync(checkListId, itemDto.Name);
+            return Created("~api/CheckLists/" + checkListId+ "/CheckListItems/" + checkListItem.Id, checkListItem);
 
         }
         //
@@ -58,9 +56,9 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CheckListItemDto>>> CheckListItemsAsync(int checkListId)
         {
-            var items = await _CheckListService.GetCheckListItemsAsync(checkListId);
-            var result = _mapper.Map<IEnumerable<CheckListItemDto>>(items);
-            return Ok(result);
+            IEnumerable<CheckListItem> CheckListItems = await _CheckListService.GetCheckListItemsAsync(checkListId);
+            IEnumerable<CheckListItemDto> checkListItemsDto = _mapper.Map<IEnumerable<CheckListItemDto>>(CheckListItems);
+            return Ok(checkListItemsDto);
         }
 
         [HttpPut("{checkListId}/CheckListItems/{checkListItemId}")] // PUT api/CheckLists/123/CheckListItems/456

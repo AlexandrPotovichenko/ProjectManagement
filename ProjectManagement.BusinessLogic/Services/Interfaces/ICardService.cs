@@ -16,7 +16,7 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
         Task UpdateMembershipOfMemberOnCardAsync(int cardId, int memberId, Role newRole);
         Task<CardAction> AddCommentToCardAsync(int cardId , string comment);
         Task<IEnumerable<CardAction>> GetCommentsOnCardAsync(int cardId);
-        Task<IEnumerable<CardAction>> GetCommentOnCardAsync(int cardId,int commentId);
+        Task<IEnumerable<CardAction>> GetCommentsOnCardAsync(int cardId,int commentId);
         Task DeleteCommentOnCardAsync(int cardId, int commentId);
         Task MoveCardToListAsync(int cardId, int newListId);
     }

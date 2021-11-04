@@ -24,7 +24,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         }
         public async Task<CheckList> CreateCheckListAsync(int cardId, string name)
         {
-            CardMember currentCardMember =  await GetCurrentCardMember(cardId);
+            CardMember currentCardMember = await GetCurrentCardMember(cardId);
             if (!currentCardMember.CanUpdate)
             {
                 throw new Exception();
@@ -46,7 +46,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CardMember currentCardMember = await GetCurrentCardMember(checkList.CardId);
             if (!currentCardMember.CanUpdate)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(checkList.CardId);
             CheckListItem checkListItem = new CheckListItem(name);
@@ -65,7 +65,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CardMember currentCardMember = await GetCurrentCardMember(cardId);
             if (!currentCardMember.CanRead)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Card card = await GetCardByIdAsync(cardId);
             return card.CheckLists;
@@ -77,21 +77,21 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CardMember currentCardMember = await GetCurrentCardMember(checkList.CardId);
             if (!currentCardMember.CanRead)
             {
-                throw new Exception();
-            }    
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
+            }
             return checkList.ChecklistItems;
         }
-        public async Task CompleteCheckListItemAsync( int checkListId,int checkListItemId)
+        public async Task CompleteCheckListItemAsync(int checkListId, int checkListItemId)
         {
             CheckList checkList = await GetCheckListByIdAsync(checkListId);
             CardMember currentCardMember = await GetCurrentCardMember(checkList.CardId);
             if (!currentCardMember.CanRead)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(checkList.CardId);
-            CheckList checkListForEdit = card.CheckLists.Where(cl=>cl.Id == checkListId).FirstOrDefault();
-            CheckListItem checkListItem = checkListForEdit.ChecklistItems.Where(cli=>cli.Id== checkListItemId).FirstOrDefault();
+            CheckList checkListForEdit = card.CheckLists.Where(cl => cl.Id == checkListId).FirstOrDefault();
+            CheckListItem checkListItem = checkListForEdit.ChecklistItems.Where(cli => cli.Id == checkListItemId).FirstOrDefault();
             Guard.Against.NullObject(checkListItemId, checkListItem, "CheckListItem");
             checkListItem.IsDone = true;
             string actionDescription = $"Complete  CheckListItem {checkListItem.Name}({checkListItem.Id})";
@@ -106,7 +106,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CardMember currentCardMember = await GetCurrentCardMember(checkList.CardId);
             if (!currentCardMember.CanUpdate)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(checkList.CardId);
             CheckList checkListForDeleting = card.CheckLists.Where(cl => cl.Id == checkListId).FirstOrDefault();
@@ -124,7 +124,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CardMember currentCardMember = await GetCurrentCardMember(checkList.CardId);
             if (!currentCardMember.CanUpdate)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(checkList.CardId);
             CheckList checkListForEdit = card.CheckLists.Where(cl => cl.Id == checkList.Id).FirstOrDefault();

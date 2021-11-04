@@ -18,6 +18,8 @@ using ProjectManagement.Profiles;
 using Microsoft.AspNetCore.Http;
 
 using System.Text.Json.Serialization;
+using ProjectManagement.Extensions;
+using ProjectManagement.CustomExceptionMiddleware;
 
 namespace ProjectManagement
 {
@@ -110,6 +112,7 @@ namespace ProjectManagement
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProjectManagement v1"));
             }
+            app.UseMiddleware<ExceptionMiddleware>();
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthentication();

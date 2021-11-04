@@ -35,8 +35,8 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         {
             int currentUserId = _userManager.GetCurrentUserId();
             BoardMember boardMember = new BoardMember(currentUserId, Role.Admin);
-            var item = new Board(name, description, boardMember);
-            var insertedItem = await _boardRepository.InsertAsync(item);
+            Board board = new Board(name, description, boardMember);
+            var insertedItem = await _boardRepository.InsertAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
             return insertedItem;
         }
@@ -47,7 +47,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
             if(!boardMember.CanRead)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             return await _boardRepository.GetWithItemsByIdAsync(boardId);
         }
@@ -58,7 +58,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
             if (!boardMember.CanDelete)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             await _boardRepository.DeleteByIdAsync(boardId);
         }
@@ -69,7 +69,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
             if (!boardMember.CanRead)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Board board = await GetBoardByIdAsync(boardId);
             return board.BoardMembers;
@@ -81,7 +81,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
             if (!boardMember.IsMemberAdmin)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
             User user = await _userRepository.GetByIdAsync(newMemberUserId);
@@ -101,7 +101,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             BoardMember currentBoardMember = await GetMemberByUserIdAsync(boardMember.BoardId, currentUserId);
             if (!currentBoardMember.IsMemberAdmin)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardMember.BoardId);
             BoardMember removableBoardMember = GetBoardMemberByMemberId(board, memberId);
@@ -116,7 +116,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
             if (!boardMember.IsMemberAdmin)
             {
-                throw new Exception();
+                throw new AccessViolationException("Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
             BoardMember editableBoardMember = GetBoardMemberByMemberId(board, memberId);
