@@ -9,6 +9,5 @@ namespace ProjectManagement.DataAccess.Repositories.Interfaces
 {
     public interface IBoardMemberRepository : IRepository<BoardMember, int>
     {
-        //Task<User> GetByNameAsync(string name);
     }
 }

@@ -28,6 +28,5 @@ namespace ProjectManagement.Domain.Models
             Lists.Add(new List() { Name = "Done" });
             BoardMembers.Add(boardMember);
         }
-
     }
 }
