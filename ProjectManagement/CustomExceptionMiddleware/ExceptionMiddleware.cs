@@ -24,34 +24,35 @@ namespace ProjectManagement.CustomExceptionMiddleware
             {
                 await _next(httpContext);
             }
-            catch (MemberAlreadyExistsException maeEx)
+            catch (BusinessLogic.Exceptions.WebAppException waEx)
             {
-                _logger.LogError($"A new violation exception has been thrown: {maeEx}");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.Conflict;
-                await HandleExceptionAsync(httpContext, maeEx);
+                _logger.LogError($"A new exception has been thrown: {waEx.Message}");
+
+                httpContext.Response.ContentType = "application/json";
+                httpContext.Response.StatusCode = waEx.Status;
+                await httpContext.Response.WriteAsync(new ErrorDetails()
+                {
+                    StatusCode = httpContext.Response.StatusCode,
+                    Message = waEx.Message
+                }.ToString());
             }
-            catch (ObjectNotFoundException onfEx)
-            {
-                _logger.LogError($"A new violation exception has been thrown: {onfEx}");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                await HandleExceptionAsync(httpContext, onfEx);
-            }
-            catch (AccessViolationException avEx)
-            {
-                _logger.LogError($"A new violation exception has been thrown: {avEx}");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
-                await HandleExceptionAsync(httpContext, avEx);
-            }
+
             catch (Exception ex)
             {
                 _logger.LogError($"Something went wrong: {ex}");
                 httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                await HandleExceptionAsync(httpContext, ex);
+                httpContext.Response.ContentType = "application/json";
+                await httpContext.Response.WriteAsync(new ErrorDetails()
+                {
+                    StatusCode = httpContext.Response.StatusCode,
+                    Message = ex.Message
+                }.ToString());
             }
         }
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.Conflict;
             await context.Response.WriteAsync(new ErrorDetails()
             {
                 StatusCode = context.Response.StatusCode,

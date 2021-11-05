@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using ProjectManagement.AuthenticationHandlers;
 using ProjectManagement.BusinessLogic.Services.Implementation;
@@ -16,14 +15,11 @@ using ProjectManagement.DataAccess.Repositories.Implementation;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Profiles;
 using Microsoft.AspNetCore.Http;
-
 using System.Text.Json.Serialization;
-using ProjectManagement.Extensions;
 using ProjectManagement.CustomExceptionMiddleware;
 
 namespace ProjectManagement
 {
-
     public class Startup
     {
         public Startup(IConfiguration configuration)

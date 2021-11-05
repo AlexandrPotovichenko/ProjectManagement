@@ -8,6 +8,7 @@ using ProjectManagement.Domain.Models;
 using System.Linq;
 using System;
 using ProjectManagement.BusinessLogic.Specifications;
+using System.Net;
 
 namespace ProjectManagement.BusinessLogic.Services.Implementation
 {
@@ -43,33 +44,30 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task<Board> GetBoardAsync(int boardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
-            if(!boardMember.CanRead)
+            BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardId);
+            if (!currentBoardMember.CanRead)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             return await _boardRepository.GetWithItemsByIdAsync(boardId);
         }
 
         public async Task DeleteBoardAsync(int boardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
-            if (!boardMember.CanDelete)
+            BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardId);
+            if (!currentBoardMember.CanDelete)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             await _boardRepository.DeleteByIdAsync(boardId);
         }
 
         public async Task<IEnumerable<BoardMember>> GetMembershipOfMemberOnBoardAsync(int boardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
-            if (!boardMember.CanRead)
+            BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardId);
+            if (!currentBoardMember.CanRead)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Board board = await GetBoardByIdAsync(boardId);
             return board.BoardMembers;
@@ -77,11 +75,10 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task<BoardMember> AddMemberToBoardAsync(int newMemberUserId, int boardId, Role role)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
-            if (!boardMember.IsMemberAdmin)
+            BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardId);
+            if (!currentBoardMember.IsMemberAdmin)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
             User user = await _userRepository.GetByIdAsync(newMemberUserId);
@@ -97,30 +94,29 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         public async Task RemoveMemberFromBoardAsync(int memberId)
         {
             BoardMember boardMember = await _boardRepository.GetBoardMemberByIdAsync(memberId);
-            int currentUserId = _userManager.GetCurrentUserId();
-            BoardMember currentBoardMember = await GetMemberByUserIdAsync(boardMember.BoardId, currentUserId);
+            Guard.Against.NullObject(memberId, boardMember, "BoardMember");
+            BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardMember.BoardId);
             if (!currentBoardMember.IsMemberAdmin)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardMember.BoardId);
-            BoardMember removableBoardMember = GetBoardMemberByMemberId(board, memberId);
-            board.BoardMembers.Remove(removableBoardMember);
+            BoardMember boardMemberForDelete = GetBoardMemberByMemberId(board, memberId);
+            board.BoardMembers.Remove(boardMemberForDelete);
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
         }
 
         public async Task UpdateMembershipOfMemberOnBoardAsync(int boardId, int memberId, Role newRole)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            BoardMember boardMember = await GetMemberByUserIdAsync(boardId, currentUserId);
-            if (!boardMember.IsMemberAdmin)
+            BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardId);
+            if (!currentBoardMember.IsMemberAdmin)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
-            BoardMember editableBoardMember = GetBoardMemberByMemberId(board, memberId);
-            editableBoardMember.Role = newRole;   
+            BoardMember boardMemberForEdit = GetBoardMemberByMemberId(board, memberId);
+            boardMemberForEdit.Role = newRole;   
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
         }
@@ -131,12 +127,14 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Guard.Against.NullObject(boardId, board, "Board");
             return board;
         }
+
         private BoardMember GetBoardMemberByMemberId(Board board, int memberId)
         {
             BoardMember boardMember = board.BoardMembers.FirstOrDefault(bm => bm.Id == memberId);
             Guard.Against.NullObject(memberId, boardMember, "BoardMember");
             return boardMember;
         }
+
         private async Task<BoardMember> GetMemberByUserIdAsync(int boardId, int userId)
         {
             var memberSpec = new GetBoardMemberByUserIdSpecification(userId, boardId);
@@ -145,5 +143,10 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             return boardMember;
         }
 
+        private async Task<BoardMember> GetCurrentBoardMemberAsync(int boardId)
+        {
+            int currentUserId = _userManager.GetCurrentUserId();
+            return await GetMemberByUserIdAsync(boardId, currentUserId);
+        }
     }
 }

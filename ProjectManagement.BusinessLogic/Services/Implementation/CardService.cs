@@ -8,6 +8,7 @@ using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Domain.Models;
 using System.Linq;
 using System;
+using System.Net;
 
 namespace ProjectManagement.BusinessLogic.Services.Implementation
 {
@@ -38,7 +39,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             bool userCanCreateCard = await _cardRepository.CanCreateCardAsync(list.BoardId, currentUserId);
             if (!userCanCreateCard)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             CardMember CardMember = new CardMember(currentUserId, Role.Admin);
             Card card = new Card(name, description, CardMember, listId);
@@ -58,22 +59,20 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task DeleteCardAsync(int cardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            CardMember cardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember cardMember = await GetCurrentCardMemberAsync(cardId);
             if (cardMember != null && !cardMember.IsMemberAdmin)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             await _cardRepository.DeleteByIdAsync(cardId);
         }
 
         public async Task<IEnumerable<CardMember>> GetMembershipOfMemberOnCardAsync(int cardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            CardMember cardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember cardMember = await GetCurrentCardMemberAsync(cardId);
             if (cardMember != null && !cardMember.CanRead)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Card card = await GetCardByIdAsync(cardId);
             return card.CardMembers;
@@ -81,13 +80,12 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task<CardMember> AddMemberToCardAsync(int userId, int cardId, Role role)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
             User userForMembership = await _userManager.GetUserByIdAsync(userId);
             Card card = await GetForEditByIdAsync(cardId);
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (!currentCardMember.IsMemberAdmin)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Guard.Against.CheckMemebershipCard(userId, card);
             CardMember newCardMember = new CardMember(userId, role);
@@ -110,14 +108,13 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task RemoveMemberFromCardAsync(int memberId, int cardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
             Card card = await GetCardWithMembersByIdAsync(cardId);
             CardMember сardMemberForRemoveFromMembership = GetCardMemberByMemberId(card, memberId);
             User userForRemoveFromMembership = await _userManager.GetUserByIdAsync(сardMemberForRemoveFromMembership.UserId);
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (!currentCardMember.IsMemberAdmin)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             card = await GetForEditByIdAsync(cardId);
             CardMember сardMember = GetCardMemberByMemberId(card, memberId);
@@ -131,14 +128,12 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task UpdateMembershipOfMemberOnCardAsync(int cardId, int memberId, Role newRole)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            Card card = await GetCardWithMembersByIdAsync(cardId);
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (!currentCardMember.IsMemberAdmin)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
-            card = await GetForEditByIdAsync(cardId);
+            Card card = await GetForEditByIdAsync(cardId);
             CardMember cardMember = card.CardMembers.Where(c => c.Id == memberId).FirstOrDefault();
             User user = await _userManager.GetUserByIdAsync(cardMember.UserId);
             Guard.Against.NullObject(cardMember.UserId, user, "User");
@@ -152,16 +147,13 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task<CardAction> AddCommentToCardAsync(int cardId, string comment)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (currentCardMember != null && !currentCardMember.CanUpdate)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(cardId);
-            User user = await _userManager.GetUserByIdAsync(currentUserId);
-            CardMember cardMember = GetCardMemberByUserId(card, currentUserId);
-            CardAction cardAction = new CardAction(cardMember.Id, comment, true);
+            CardAction cardAction = new CardAction(currentCardMember.Id, comment, true);
             card.Actions.Add(cardAction);
             await _cardRepository.UpdateAsync(card);
             await _cardRepository.UnitOfWork.SaveChangesAsync();
@@ -170,22 +162,20 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task<IEnumerable<CardAction>> GetCommentsOnCardAsync(int cardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (currentCardMember != null && !currentCardMember.CanRead)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Card card = await GetCardByIdAsync(cardId);
             return card.Actions.Where(a => a.IsComment);
         }
         public async Task<IEnumerable<CardAction>> GetCommentsOnCardAsync(int cardId, int commentId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (currentCardMember != null && !currentCardMember.CanRead)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Card card = await GetCardByIdAsync(cardId);
             return card.Actions.Where(a => a.Id == commentId && a.IsComment);
@@ -193,18 +183,17 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task DeleteCommentOnCardAsync(int cardId, int commentId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (currentCardMember != null && !currentCardMember.CanUpdate)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(cardId);
             CardAction cardAction = card.Actions.FirstOrDefault(a => a.Id == commentId);
             Guard.Against.NullObject(commentId, cardAction, "Comment");
             if (cardAction.MemberId != currentCardMember.Id) // the user can delete his own comments
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             card.Actions.Remove(cardAction);
             string description = $"Delete Comment";
@@ -215,20 +204,17 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task MoveCardToListAsync(int cardId, int newListId)
         {
-
-            int currentUserId = _userManager.GetCurrentUserId();
-            CardMember currentCardMember = await GetMemberByUserIdAsync(cardId, currentUserId);
+            CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (currentCardMember != null && !currentCardMember.CanUpdate)
             {
-                throw new AccessViolationException("Violation Exception while accessing the resource.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(cardId);
             List newList = await GetListByIdAsync(newListId);
             List oldList = await GetListByIdAsync(card.List.Id);
             if (newList.BoardId != oldList.BoardId)
             {
-                //throw new AccessViolationException("Violation Exception while accessing the resource.");
-                throw new Exception("The card can be moved to another list only on the same board.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "The card can be moved to another list only on the same board.");
             }
             card.List = newList;
             string description = $"Move Card from list {oldList.Name} to list {newList}";
@@ -270,17 +256,17 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Guard.Against.NullObject(cardMemberId, cardMember, "CardMember");
             return cardMember;
         }
-        private CardMember GetCardMemberByUserId(Card card, int userId)
+        private async Task<CardMember> GetCardMemberByUserId(int cardId, int userId)
         {
-            CardMember cardMember = card.CardMembers.FirstOrDefault(cm => cm.UserId == userId);
+            var memberSpec = new GetCardMemberByUserIdSpecification(userId, cardId);
+            CardMember cardMember = await _cardMemberRepository.GetSingleAsync(memberSpec);
             Guard.Against.NullObject(userId, cardMember, "CardMember");
             return cardMember;
         }
-        public async Task<Role> GetMemberRoleAsync(int userId, int cardId)
+        private async Task<CardMember> GetCurrentCardMemberAsync(int cardId)
         {
-            Card card = await _cardRepository.GetByIdAsync(cardId);
-            CardMember cardMember = GetCardMemberByUserId(card, userId);
-            return cardMember.Role;
+            int currentUserId = _userManager.GetCurrentUserId();
+            return await GetCardMemberByUserId(cardId, currentUserId);
         }
     }
 }
