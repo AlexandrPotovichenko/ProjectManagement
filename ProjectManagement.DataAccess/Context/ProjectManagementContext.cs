@@ -8,6 +8,7 @@ namespace ProjectManagement.DataAccess.Context
     public class ProjectManagementContext : DbContext, IUnitOfWork
     {
         public DbSet<User> Users { get; set; }
+        public DbSet<AppFile> AppFiles { get; set; }
         public DbSet<Board> Boards { get; set; } 
         public DbSet<List>Lists { get; set; }
         public DbSet<Card>Cards { get; set; }
@@ -52,12 +53,18 @@ namespace ProjectManagement.DataAccess.Context
                 cl.HasMany(x => x.ChecklistItems).WithOne(x => x.CheckList);
                 cl.Property(x => x.Name);
             });
-            modelBuilder.Entity<User>().HasKey(t => t.Id);
+            modelBuilder.Entity<User>().HasKey(u => u.Id);
+            modelBuilder.Entity<User>().HasOne(u => u.Avatar);
             modelBuilder.Entity<User>().HasData(new User { Id = 1, Name = "John Doe" });
             modelBuilder.Entity<CardAction>(ca =>
             {
                 ca.HasKey(x => x.Id);
                 ca.Property(t => t.Date).HasColumnType("DateTime");
+            });
+            modelBuilder.Entity<AppFile>(af=>
+            { 
+                af.HasKey(x => x.Id);
+                af.Property(x => x.Content);
             });
         }
     }

@@ -59,7 +59,8 @@ namespace ProjectManagement
             services.AddScoped<IUserManager, ProjectManagement.BusinessLogic.Services.Implementation.UserMananger>(x =>
                         new UserMananger(
                             x.GetRequiredService<IHttpContextAccessor>(), x.GetRequiredService<IUserRepository>()));
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IUserService, UserService>(x=>new UserService(x.GetRequiredService<IUserRepository>(),x.GetRequiredService<IFileService>()));
             services.AddAuthentication("Basic")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
             services.AddControllers()

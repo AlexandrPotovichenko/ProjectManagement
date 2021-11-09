@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ProjectManagement.DataAccess.Context;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Domain.Models;
+using System.Linq;
 
 namespace ProjectManagement.DataAccess.Repositories.Implementation
 {
@@ -19,6 +20,12 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         {
             return await _dbSet.FirstOrDefaultAsync(x => x.Id == userId);
         }
+
+        public async Task<User> GetWithItemsByIdAsync(int userId)
+        {
+            return await _context.Users.Include(u=>u.Avatar).Where(x => x.Id == userId).FirstOrDefaultAsync();
+        }
+
         public async Task<bool> UserExistsAsync(int userId)
         {
             return await _dbSet.AnyAsync(u => u.Id == userId);
