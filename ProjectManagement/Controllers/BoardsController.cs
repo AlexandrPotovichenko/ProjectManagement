@@ -27,9 +27,9 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<BoardDto>>> GetBoardsAsync()
         {
-            var items = await _BoardService.GetBoardsAsync();
-            var result = _mapper.Map<IEnumerable<BoardDto>>(items);
-            return Ok(result);
+            IEnumerable<Board> boards = await _BoardService.GetBoardsAsync();
+            IEnumerable<BoardDto> boardsDto = _mapper.Map<IEnumerable<BoardDto>>(boards);
+            return Ok(boardsDto);
         }
  
         [HttpGet("{boardId}")] // GET api/Boards/123
@@ -37,29 +37,27 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult<BoardDto>> GetBoardAsync(int boardId)
         {
             Board board = await _BoardService.GetBoardAsync(boardId);
-            var result = _mapper.Map<BoardDto>(board);
-            return Ok(result);
+            BoardDto boardDto = _mapper.Map<BoardDto>(board);
+            return Ok(boardDto);
         }
 
         [HttpPost]// POST api/Boards
         [Authorize]
-        public async Task<ActionResult<BoardDto>> CreateBoardAsync([FromBody] PostBoardDto itemDto)
+        public async Task<ActionResult> CreateBoardAsync([FromBody] PostBoardDto itemDto)
         {
-            var item = await _BoardService.CreateBoardAsync(itemDto.Name,itemDto.Description);
-            var result = _mapper.Map<BoardDto>(item);
-            return Created("~api/Boards/"+result.Id, result);
+            Board board = await _BoardService.CreateBoardAsync(itemDto.Name,itemDto.Description);
+            return Created("~api/Boards/"+ board.Id, board);
         }
 
         [HttpPost("{boardId}/members")]// POST api/Boards/123/members
         [Authorize]
-        public async Task<ActionResult<BoardMemberDto>> AddMemberToBoardAsync(int boardId, [FromBody] PostBoardMemberDto itemDto)
+        public async Task<ActionResult> AddMemberToBoardAsync(int boardId, [FromBody] PostBoardMemberDto itemDto)
         {
-            var item = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,boardId, itemDto.Role);
-            var result = _mapper.Map<BoardMemberDto>(item);
-            return Created("~api/Boards/" + boardId+"/members/"+result.Id, result);
+            BoardMember boardMember = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,boardId, itemDto.Role);
+            return Created("~api/Boards/" + boardId+"/members/"+ boardMember.Id, boardMember);
         }
 
-        [HttpPut("{boardId}/members/{int memberId}")] // PUT api/Boards/123/members/456
+        [HttpPut("{boardId}/members/{memberId}")] // PUT api/Boards/123/members/456
         [Authorize]
         public async Task<ActionResult> UpdateMembershipAsync(int boardId, int memberId, [FromBody] UpdateMembershipDto itemDto)
         {

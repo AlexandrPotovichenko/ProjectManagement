@@ -12,13 +12,13 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     {
         private readonly IUserRepository _UserRepository;
 
-         public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository)
         {
             _UserRepository = userRepository;
         }
         public async Task<User> AuthenticateUserAsync(string login, string password)
         {
-            var user = await _UserRepository.GetByNameAsync(login);
+            User user = await _UserRepository.GetByNameAsync(login);
             if (user is null)
             {
                 throw new System.Exception();
@@ -28,7 +28,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task ChangePasswordAsync(string login, string password, string newPassword)
         {
-            var user = AuthenticateUserAsync(login, password);
+            User user = await AuthenticateUserAsync(login, password);
             User userForEdit = await _UserRepository.GetForEditByIdAsync(user.Id);
             userForEdit.PasswordHash = BCryptNet.HashPassword(newPassword);
         }

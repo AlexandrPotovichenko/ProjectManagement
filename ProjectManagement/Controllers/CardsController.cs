@@ -28,8 +28,8 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CardDto>>> GetCardsAsync()
         {
-            var items = await _CardService.GetCardsAsync();
-            var result = _mapper.Map<IEnumerable<CardDto>>(items);
+            IEnumerable<Card> cards = await _CardService.GetCardsAsync();
+            IEnumerable<CardDto> result = _mapper.Map<IEnumerable<CardDto>>(cards);
             return Ok(result);
         }
 
@@ -38,26 +38,24 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult<CardDto>> GetCardAsync(int cardId)
         {
             Card card  = await _CardService.GetCardAsync(cardId);
-            var result = _mapper.Map<CardDto>(card);
+            CardDto result = _mapper.Map<CardDto>(card);
             return Ok(result);
         }
 
         [HttpPost] // POST api/Cards
         [Authorize]
-        public async Task<ActionResult<CardDto>> CreateCardAsync([FromBody] PostCardDto itemDto)
+        public async Task<ActionResult> CreateCardAsync([FromBody] PostCardDto itemDto)
         {
-            var item = await _CardService.CreateCardAsync(itemDto.Name,itemDto.Description,itemDto.ListId);
-            var result = _mapper.Map<CardDto>(item);
-            return Created("~api/Cards/" + result.Id, result);
+            Card card = await _CardService.CreateCardAsync(itemDto.Name,itemDto.Description,itemDto.ListId);
+            return Created("~api/Cards/" + card.Id, card);
         }
 
         [HttpPost("{cardId}/members")]// POST api/Cards/123/members
         [Authorize]
-        public async Task<ActionResult<CardMemberDto>> AddMemberToCardAsync(int cardId,[FromBody] PostCardMemberDto itemDto)
+        public async Task<ActionResult> AddMemberToCardAsync(int cardId,[FromBody] PostCardMemberDto itemDto)
         {
-            var item = await _CardService.AddMemberToCardAsync(itemDto.UserId, cardId, itemDto.Role);
-            var result = _mapper.Map<CardMemberDto>(item);
-            return Created("~api/Cards/" + cardId + "/members/" + result.Id, result);
+            CardMember cardMember = await _CardService.AddMemberToCardAsync(itemDto.UserId, cardId, itemDto.Role);
+            return Created("~api/Cards/" + cardId + "/members/" + cardMember.Id, cardMember);
         }
 
         [HttpPut("{cardId}/members/{memberId}")] // PUT api/Cards/123/members/456
@@ -80,25 +78,25 @@ namespace ProjectManagement.Controllers
         [Authorize]
         public async Task<ActionResult> AddCommentToCardAsync(int cardId, string comment)
         {
-            var item = await _CardService.AddCommentToCardAsync(cardId, comment);
-            return Created("~api/Cards/" + cardId + "/Comments/" + item.Id, item);
+            CardAction cardAction = await _CardService.AddCommentToCardAsync(cardId, comment);
+            return Created("~api/Cards/" + cardId + "/Comments/" + cardAction.Id, cardAction);
         }
 
         [HttpGet("{cardId}/Comments")]  // GET api/Cards/123/Comments
         [Authorize]
-        public async Task<ActionResult<IEnumerable<CardAction>>> GetCommentsAsync(int cardId)
+        public async Task<ActionResult<IEnumerable<CardActionDto>>> GetCommentsAsync(int cardId)
         {
-            var items = await _CardService.GetCommentsOnCardAsync(cardId);
-            var result = _mapper.Map<IEnumerable<CardAction>>(items);
+            IEnumerable<CardAction> cardActions = await _CardService.GetCommentsOnCardAsync(cardId);
+            IEnumerable<CardActionDto> result = _mapper.Map<IEnumerable<CardActionDto>>(cardActions);
             return Ok(result);
         }
 
         [HttpGet("{cardId}/Comments/{commentId}")]  // GET api/Cards/123/Comments
         [Authorize]
-        public async Task<ActionResult<IEnumerable<CardAction>>> GetCommentAsync(int cardId,int commentId)
+        public async Task<ActionResult<IEnumerable<CardActionDto>>> GetCommentsAsync(int cardId,int commentId)
         {
-            var item = await _CardService.GetCommentOnCardAsync(cardId, commentId);
-            var result = _mapper.Map<CardAction>(item);
+            IEnumerable<CardAction> item = await _CardService.GetCommentsOnCardAsync(cardId, commentId);
+            IEnumerable<CardActionDto> result = _mapper.Map<IEnumerable<CardActionDto>>(item);
             return Ok(result);
         }
 
