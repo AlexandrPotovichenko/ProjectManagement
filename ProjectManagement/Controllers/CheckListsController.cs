@@ -30,14 +30,16 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult> CreateCheckListAsync([FromBody] PostCheckListDto itemDto)
         {
             CheckList checkList = await _CheckListService.CreateCheckListAsync(itemDto.CardId, itemDto.Name);
-            return Created("~api/CheckLists/" + checkList.Id, checkList);
+            CheckListDto checkListDto = _mapper.Map<CheckListDto>(checkList);
+            return Created("~api/CheckLists/" + checkList.Id, checkListDto);
         }
         [HttpPost("{checkListId}/CheckListItems")]// POST api/CheckLists/123/CheckListItems
         [Authorize]
         public async Task<ActionResult> CreateCheckListItemAsync(int checkListId,[FromBody] PostCheckListItemDto itemDto)
         {
             CheckListItem checkListItem = await _CheckListService.AddCheckListItemToCheckListAsync(checkListId, itemDto.Name);
-            return Created("~api/CheckLists/" + checkListId+ "/CheckListItems/" + checkListItem.Id, checkListItem);
+            CheckListItemDto checkListItemDto = _mapper.Map<CheckListItemDto>(checkListItem);
+            return Created("~api/CheckLists/" + checkListId+ "/CheckListItems/" + checkListItem.Id, checkListItemDto);
 
         }
         //

@@ -41,24 +41,31 @@ namespace ProjectManagement
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-            services.AddScoped<IBoardService, BoardService>(x =>
-                        new BoardService(
-                            x.GetRequiredService<IBoardRepository>(), x.GetRequiredService<IUserRepository>(),
-                            x.GetRequiredService<IBoardMemberRepository>(), x.GetRequiredService<IUserManager>()));
-            services.AddScoped<ICardService, CardService>(x =>
-                        new CardService(
-                            x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IListRepository>(),
-                            x.GetRequiredService<ICardMemberRepository>(), x.GetRequiredService<IUserManager>()));
-            services.AddScoped<ICheckListService, CheckListService>(x =>
-                        new CheckListService(x.GetRequiredService<ICheckListRepository>(),
-                        x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IUserManager>()));
-            services.AddScoped<IBoardMemberRepository, BoardMemberRepository>(x =>
-                        new BoardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
-            services.AddScoped<ICardMemberRepository, CardMemberRepository>(x =>
-                        new CardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
-            services.AddScoped<IUserManager, ProjectManagement.BusinessLogic.Services.Implementation.UserMananger>(x =>
-                        new UserMananger(
-                            x.GetRequiredService<IHttpContextAccessor>(), x.GetRequiredService<IUserRepository>()));
+
+            services.AddScoped<IBoardService, BoardService>();
+            services.AddScoped<ICardService, CardService>();
+            services.AddScoped<ICheckListService, CheckListService>();
+            services.AddScoped<IBoardMemberRepository, BoardMemberRepository>();
+            services.AddScoped<ICardMemberRepository, CardMemberRepository>();
+
+
+            //services.AddScoped<IBoardService, BoardService>(x =>
+            //            new BoardService(
+            //                x.GetRequiredService<IBoardRepository>(), x.GetRequiredService<IUserRepository>(),
+            //                x.GetRequiredService<IBoardMemberRepository>(), x.GetRequiredService<IUserManager>()));
+            //services.AddScoped<ICardService, CardService>(x =>
+            //            new CardService(
+            //                x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IListRepository>(),
+            //                x.GetRequiredService<ICardMemberRepository>(), x.GetRequiredService<IUserManager>()));
+            //services.AddScoped<ICheckListService, CheckListService>(x =>
+            //            new CheckListService(x.GetRequiredService<ICheckListRepository>(),
+            //            x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IUserManager>()));
+            //services.AddScoped<IBoardMemberRepository, BoardMemberRepository>(x =>
+            //            new BoardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
+            //services.AddScoped<ICardMemberRepository, CardMemberRepository>(x =>
+            //            new CardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
+            services.AddScoped<IUserManager, UserMananger>();
+            services.AddScoped<IFileService, FileService>();
             services.AddScoped<IUserService, UserService>();
             services.AddAuthentication("Basic")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);

@@ -47,7 +47,8 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult> CreateCardAsync([FromBody] PostCardDto itemDto)
         {
             Card card = await _CardService.CreateCardAsync(itemDto.Name,itemDto.Description,itemDto.ListId);
-            return Created("~api/Cards/" + card.Id, card);
+            CardDto cardDto = _mapper.Map<CardDto>(card);
+            return Created("~api/Cards/" + card.Id, cardDto);
         }
 
         [HttpPost("{cardId}/members")]// POST api/Cards/123/members
@@ -55,7 +56,8 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult> AddMemberToCardAsync(int cardId,[FromBody] PostCardMemberDto itemDto)
         {
             CardMember cardMember = await _CardService.AddMemberToCardAsync(itemDto.UserId, cardId, itemDto.Role);
-            return Created("~api/Cards/" + cardId + "/members/" + cardMember.Id, cardMember);
+            CardMemberDto cardMemberDto  = _mapper.Map<CardMemberDto>(cardMember);
+            return Created("~api/Cards/" + cardId + "/members/" + cardMember.Id, cardMemberDto);
         }
 
         [HttpPut("{cardId}/members/{memberId}")] // PUT api/Cards/123/members/456
@@ -79,7 +81,8 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult> AddCommentToCardAsync(int cardId, string comment)
         {
             CardAction cardAction = await _CardService.AddCommentToCardAsync(cardId, comment);
-            return Created("~api/Cards/" + cardId + "/Comments/" + cardAction.Id, cardAction);
+            CardActionDto cardActionDto = _mapper.Map<CardActionDto>(cardAction);
+            return Created("~api/Cards/" + cardId + "/Comments/" + cardAction.Id, cardActionDto);
         }
 
         [HttpGet("{cardId}/Comments")]  // GET api/Cards/123/Comments
