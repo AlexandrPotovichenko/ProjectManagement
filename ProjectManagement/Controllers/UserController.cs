@@ -36,20 +36,17 @@ namespace ProjectManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<FileResult> DownloadAvatarAsync(int userId)
+        public async Task<ActionResult> DownloadAvatarAsync(int userId)
         {
             AppFile avatar = await _userService.DownloadAvatarAsync(userId);
             
             if (avatar!=null)
             {
                 return File(new MemoryStream(avatar.Content), avatar.ContentType,avatar.Name);
-               
-                //return File(Convert.ToBase64String(avatar), "data:image/jpeg;base64");
             }
             else
             {
-                string message = $"User with ID {userId} have not avatar.";
-                throw new WebAppException((int)HttpStatusCode.NotFound, message);
+                return NotFound();
             }    
         }
     }

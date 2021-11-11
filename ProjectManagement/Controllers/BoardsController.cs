@@ -46,7 +46,8 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult> CreateBoardAsync([FromBody] PostBoardDto itemDto)
         {
             Board board = await _BoardService.CreateBoardAsync(itemDto.Name,itemDto.Description);
-            return Created("~api/Boards/"+ board.Id, board);
+            BoardDto boardDto = _mapper.Map<BoardDto>(board);
+            return Created("~api/Boards/"+ board.Id, boardDto);
         }
 
         [HttpPost("{boardId}/members")]// POST api/Boards/123/members
@@ -54,6 +55,7 @@ namespace ProjectManagement.Controllers
         public async Task<ActionResult> AddMemberToBoardAsync(int boardId, [FromBody] PostBoardMemberDto itemDto)
         {
             BoardMember boardMember = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,boardId, itemDto.Role);
+            BoardMemberDto boardMemberDto = _mapper.Map<BoardMemberDto>(boardMember);
             return Created("~api/Boards/" + boardId+"/members/"+ boardMember.Id, boardMember);
         }
 

@@ -20,7 +20,8 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     {
         private readonly ILogger<FileService> _logger;
         private readonly IConfiguration _configuration;
-   
+        // Upload the file if less than 2 MB
+        private const int _maxSizeForAvatarFile = 2097152;
         public FileService(ILogger<FileService> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -85,7 +86,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             if (file == null || file.Length == 0)
                 throw new WebAppException((int)HttpStatusCode.UnprocessableEntity, "file not selected");
             // Upload the file if less than 2 MB
-            if (file.Length > 2097152)
+            if (file.Length > _maxSizeForAvatarFile)
             {
                 throw new WebAppException((int)HttpStatusCode.RequestEntityTooLarge, "The file is larger than the server is able or willing to process. The download file must be no more than 2 MB");
             }
