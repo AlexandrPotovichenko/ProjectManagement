@@ -7,7 +7,7 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
     public interface IBoardService
     {
         Task<Board> CreateBoardAsync(string name, string description);
-        Task<Board> GetBoardAsync(int boardId);
+        Task<Board> GetBoardByIdAsync(int boardId);
         Task<IEnumerable<Board>> GetBoardsAsync();
         Task DeleteBoardAsync(int boardId);
         Task<IEnumerable<BoardMember>> GetMembershipOfMemberOnBoardAsync(int boardId);

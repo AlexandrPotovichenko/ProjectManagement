@@ -15,13 +15,11 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     public class BoardService : IBoardService
     {
         private readonly IBoardRepository _boardRepository;
-        private readonly IUserRepository _userRepository;
         private readonly IBoardMemberRepository _boardMemberRepository;
         private readonly IUserManager _userManager;
-        public BoardService(IBoardRepository boardRepository, IUserRepository userRepository, IBoardMemberRepository boardMemberRepository, IUserManager userManager)
+        public BoardService(IBoardRepository boardRepository,  IBoardMemberRepository boardMemberRepository, IUserManager userManager)
         {
             _boardRepository = boardRepository;
-            _userRepository = userRepository;
             _boardMemberRepository = boardMemberRepository;
             _userManager = userManager;
         }
@@ -42,7 +40,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             return insertedItem;
         }
 
-        public async Task<Board> GetBoardAsync(int boardId)
+        public async Task<Board> GetBoardByIdAsync(int boardId)
         {
             BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardId);
             if (!currentBoardMember.CanRead)
@@ -69,7 +67,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
-            Board board = await GetBoardByIdAsync(boardId);
+            Board board = await BoardByIdAsync(boardId);
             return board.BoardMembers;
         }
 
@@ -81,8 +79,6 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
-            User user = await _userRepository.GetByIdAsync(newMemberUserId);
-            Guard.Against.NullObject(newMemberUserId, user, "User");
             Guard.Against.CheckMemebershipBoard(newMemberUserId, board);
             BoardMember newBoardMember = new BoardMember(newMemberUserId, role);
             board.BoardMembers.Add(newBoardMember);
@@ -121,7 +117,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             await _boardRepository.UnitOfWork.SaveChangesAsync();
         }
 
-        private async Task<Board> GetBoardByIdAsync(int boardId)
+        private async Task<Board> BoardByIdAsync(int boardId)
         {
             Board board = await _boardRepository.GetWithMembersAsync(boardId);
             Guard.Against.NullObject(boardId, board, "Board");

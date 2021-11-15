@@ -3,13 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31515.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagement", "ProjectManagement\ProjectManagement.csproj", "{E93F583D-6E2B-4963-97B7-2464377019A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectManagement", "ProjectManagement\ProjectManagement.csproj", "{E93F583D-6E2B-4963-97B7-2464377019A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagement.BusinessLogic", "ProjectManagement.BusinessLogic\ProjectManagement.BusinessLogic.csproj", "{549A55ED-55B4-49CE-94CF-A5AB6CA60758}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectManagement.BusinessLogic", "ProjectManagement.BusinessLogic\ProjectManagement.BusinessLogic.csproj", "{549A55ED-55B4-49CE-94CF-A5AB6CA60758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagement.DataAccess", "ProjectManagement.DataAccess\ProjectManagement.DataAccess.csproj", "{FD0DDCA0-0783-4047-BAB8-9A21016AD435}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectManagement.DataAccess", "ProjectManagement.DataAccess\ProjectManagement.DataAccess.csproj", "{FD0DDCA0-0783-4047-BAB8-9A21016AD435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagement.Domain", "ProjectManagement.Domain\ProjectManagement.Domain.csproj", "{5B94959E-2C7B-4A2B-BA78-2199C97756ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectManagement.Domain", "ProjectManagement.Domain\ProjectManagement.Domain.csproj", "{5B94959E-2C7B-4A2B-BA78-2199C97756ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{13F225AB-147D-465C-B077-C2123830D006}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagement.BusinessLogic.Tests", "ProjectManagement.BusinessLogic.Tests\ProjectManagement.BusinessLogic.Tests.csproj", "{252175CB-ABD7-40C2-B0E4-D882BB857DDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +37,16 @@ Global
 		{5B94959E-2C7B-4A2B-BA78-2199C97756ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B94959E-2C7B-4A2B-BA78-2199C97756ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B94959E-2C7B-4A2B-BA78-2199C97756ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{252175CB-ABD7-40C2-B0E4-D882BB857DDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{252175CB-ABD7-40C2-B0E4-D882BB857DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{252175CB-ABD7-40C2-B0E4-D882BB857DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{252175CB-ABD7-40C2-B0E4-D882BB857DDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{252175CB-ABD7-40C2-B0E4-D882BB857DDF} = {13F225AB-147D-465C-B077-C2123830D006}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {770FD7A1-028C-4C26-90F7-A5187B502967}

@@ -28,15 +28,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             int userId = int.Parse(context.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             return userId;
         }
-        public async Task<User> GetCurrentUserAsync()
-        {
-            int currentUserId = GetCurrentUserId();
-            return await GetUserByIdAsync(currentUserId);
-        }
-        public async Task<bool> UserExistsAsync(int userId)
-        {
-            return await _userRepository.UserExistsAsync(userId);       
-        }
+ 
         public async Task<User> GetUserByIdAsync(int userId)
         {
             User user = await _userRepository.GetByIdAsync(userId);

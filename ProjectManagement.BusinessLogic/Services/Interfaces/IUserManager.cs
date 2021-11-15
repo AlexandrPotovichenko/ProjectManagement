@@ -10,8 +10,6 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
     public interface IUserManager
     {
         int GetCurrentUserId();
-        Task<User> GetCurrentUserAsync();
-        Task<bool> UserExistsAsync(int userId);
         Task<User> GetUserByIdAsync(int userId);
     }
 }
