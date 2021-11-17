@@ -60,7 +60,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             await _boardRepository.DeleteByIdAsync(boardId);
         }
 
-        public async Task<IEnumerable<BoardMember>> GetMembershipOfMemberOnBoardAsync(int boardId)
+        public async Task<IEnumerable<BoardMember>> GetAllBoardMembersAsync(int boardId)
         {
             BoardMember currentBoardMember = await GetCurrentBoardMemberAsync(boardId);
             if (!currentBoardMember.CanRead)
@@ -77,6 +77,10 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             if (!currentBoardMember.IsMemberAdmin)
             {
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
+            }
+            if (!await _userManager.IsUserExistsAsync(newMemberUserId))
+            {
+                throw new WebAppException((int)HttpStatusCode.NotFound, $"User with Id {newMemberUserId} not found.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
             Guard.Against.CheckMemebershipBoard(newMemberUserId, board);
@@ -97,7 +101,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardMember.BoardId);
-            BoardMember boardMemberForDelete = GetBoardMemberByMemberId(board, memberId);
+            BoardMember boardMemberForDelete = GetBoardMemberById(board, memberId);
             board.BoardMembers.Remove(boardMemberForDelete);
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
@@ -111,7 +115,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Board board = await _boardRepository.GetForEditByIdAsync(boardId);
-            BoardMember boardMemberForEdit = GetBoardMemberByMemberId(board, memberId);
+            BoardMember boardMemberForEdit = GetBoardMemberById(board, memberId);
             boardMemberForEdit.Role = newRole;   
             await _boardRepository.UpdateAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
@@ -124,7 +128,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             return board;
         }
 
-        private BoardMember GetBoardMemberByMemberId(Board board, int memberId)
+        private BoardMember GetBoardMemberById(Board board, int memberId)
         {
             BoardMember boardMember = board.BoardMembers.FirstOrDefault(bm => bm.Id == memberId);
             Guard.Against.NullObject(memberId, boardMember, "BoardMember");

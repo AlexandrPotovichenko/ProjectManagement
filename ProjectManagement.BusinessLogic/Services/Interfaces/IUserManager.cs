@@ -11,5 +11,6 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
     {
         int GetCurrentUserId();
         Task<User> GetUserByIdAsync(int userId);
+        Task<bool> IsUserExistsAsync(int userId);
     }
 }

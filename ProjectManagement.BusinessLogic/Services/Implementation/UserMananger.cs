@@ -35,6 +35,10 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Guard.Against.NullObject(userId, user, "User");
             return user;
         }
+        public async Task<bool> IsUserExistsAsync(int userId)
+        {
+            return await _userRepository.UserExistsAsync(userId); 
+        }
     }
 }
 
