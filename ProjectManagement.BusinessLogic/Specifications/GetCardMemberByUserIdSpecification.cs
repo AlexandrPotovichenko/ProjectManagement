@@ -6,9 +6,13 @@ namespace ProjectManagement.BusinessLogic.Specifications
 {
     public class GetCardMemberByUserIdSpecification : Specification<CardMember>
     {
-        public GetCardMemberByUserIdSpecification(int userId, int boardId)
+        public int UserId { get; private set; }
+        public int CardId { get; private set; }
+        public GetCardMemberByUserIdSpecification(int userId, int cardId)
         {
-            Query.Where(cm => cm.UserId == userId && cm.CardId==boardId);
+            UserId = userId;
+            CardId = cardId;
+            Query.Where(cm => cm.UserId == userId && cm.CardId==cardId);
         }
     }
 }

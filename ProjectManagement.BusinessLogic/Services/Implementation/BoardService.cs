@@ -35,7 +35,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             int currentUserId = _userManager.GetCurrentUserId();
             BoardMember boardMember = new BoardMember(currentUserId, Role.Admin);
             Board board = new Board(name, description, boardMember);
-            var insertedItem = await _boardRepository.InsertAsync(board);
+            Board insertedItem = await _boardRepository.InsertAsync(board);
             await _boardRepository.UnitOfWork.SaveChangesAsync();
             return insertedItem;
         }
@@ -137,7 +137,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         private async Task<BoardMember> GetMemberByUserIdAsync(int boardId, int userId)
         {
-            var memberSpec = new GetBoardMemberByUserIdSpecification(userId, boardId);
+            GetBoardMemberByUserIdSpecification memberSpec = new GetBoardMemberByUserIdSpecification(userId, boardId);
             BoardMember boardMember = await _boardMemberRepository.GetSingleAsync(memberSpec);
             Guard.Against.NullObject(userId, boardMember, "BoardMember");        
             return boardMember;

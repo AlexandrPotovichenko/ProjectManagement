@@ -36,6 +36,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         {
             int currentUserId = _userManager.GetCurrentUserId();
             List list = await _listRepository.GetForEditByIdAsync(listId);
+            Guard.Against.NullObject(listId, list, "List");
             bool userCanCreateCard = await _cardRepository.CanCreateCardAsync(list.BoardId, currentUserId);
             if (!userCanCreateCard)
             {
@@ -53,7 +54,12 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
 
         public async Task<Card> GetCardAsync(int cardId)
         {
-            int currentUserId = _userManager.GetCurrentUserId();
+            CardMember cardMember = await GetCurrentCardMemberAsync(cardId);
+            if (!cardMember.CanRead)
+            {
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
+            }
+                int currentUserId = _userManager.GetCurrentUserId();
             return await _cardRepository.GetWithItemsByIdAsync(cardId);
         }
 
@@ -67,7 +73,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             await _cardRepository.DeleteByIdAsync(cardId);
         }
 
-        public async Task<IEnumerable<CardMember>> GetMembershipOfMemberOnCardAsync(int cardId)
+        public async Task<IEnumerable<CardMember>> GetAllCardMembersAsync(int cardId)
         {
             CardMember cardMember = await GetCurrentCardMemberAsync(cardId);
             if (cardMember != null && !cardMember.CanRead)
@@ -81,6 +87,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         public async Task<CardMember> AddMemberToCardAsync(int userId, int cardId, Role role)
         {
             User userForMembership = await _userManager.GetUserByIdAsync(userId);
+            Guard.Against.NullObject(userId, userForMembership, "User");
             Card card = await GetForEditByIdAsync(cardId);
             CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (!currentCardMember.IsMemberAdmin)
@@ -98,19 +105,12 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             return newCardMember;
         }
 
-        private async Task<CardMember> GetMemberByUserIdAsync(int cardId, int userId)
-        {
-            var memberSpec = new GetCardMemberByUserIdSpecification(userId, cardId);
-            CardMember cardMember = await _cardMemberRepository.GetSingleAsync(memberSpec);
-            Guard.Against.NullObject(userId, cardMember, "CardMember");
-            return cardMember;
-        }
-
         public async Task RemoveMemberFromCardAsync(int memberId, int cardId)
         {
             Card card = await GetCardWithMembersByIdAsync(cardId);
             CardMember сardMemberForRemoveFromMembership = GetCardMemberByMemberId(card, memberId);
             User userForRemoveFromMembership = await _userManager.GetUserByIdAsync(сardMemberForRemoveFromMembership.UserId);
+            Guard.Against.NullObject(сardMemberForRemoveFromMembership.UserId, userForRemoveFromMembership, "User");
             CardMember currentCardMember = await GetCurrentCardMemberAsync(cardId);
             if (!currentCardMember.IsMemberAdmin)
             {
@@ -135,6 +135,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             }
             Card card = await GetForEditByIdAsync(cardId);
             CardMember cardMember = card.CardMembers.Where(c => c.Id == memberId).FirstOrDefault();
+            Guard.Against.NullObject(memberId, cardMember, "CardMember");
             User user = await _userManager.GetUserByIdAsync(cardMember.UserId);
             Guard.Against.NullObject(cardMember.UserId, user, "User");
             Role oldRole = cardMember.Role;
@@ -258,7 +259,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         }
         private async Task<CardMember> GetCardMemberByUserId(int cardId, int userId)
         {
-            var memberSpec = new GetCardMemberByUserIdSpecification(userId, cardId);
+            GetCardMemberByUserIdSpecification memberSpec = new GetCardMemberByUserIdSpecification(userId, cardId);
             CardMember cardMember = await _cardMemberRepository.GetSingleAsync(memberSpec);
             Guard.Against.NullObject(userId, cardMember, "CardMember");
             return cardMember;

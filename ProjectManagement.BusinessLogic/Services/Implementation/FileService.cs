@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using nClam;
 using ProjectManagement.BusinessLogic.Exceptions;
+using ProjectManagement.BusinessLogic.Options;
 using ProjectManagement.BusinessLogic.Services.Interfaces;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Domain.Models;
@@ -19,13 +20,14 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     public class FileService : IFileService
     {
         private readonly ILogger<FileService> _logger;
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
+        private readonly ClamAVServerOptions _options;
         // Upload the file if less than 2 MB
         private const int _maxSizeForAvatarFile = 2097152;
-        public FileService(ILogger<FileService> logger, IConfiguration configuration)
+        public FileService(ILogger<FileService> logger, ClamAVServerOptions options)
         {
             _logger = logger;
-            _configuration = configuration;
+            _options = options;
         }
         
         public async Task ScanFileForVirusesAsync(IFormFile file)
@@ -45,17 +47,17 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             }
         }
 
-        public async Task<bool?> IsFileInfectedAsync(IFormFile file)
+        private async Task<bool?> IsFileInfectedAsync(IFormFile file)
         {
-            var ms = new MemoryStream();
+            MemoryStream ms = new MemoryStream();
             file.OpenReadStream().CopyTo(ms);
             byte[] fileBytes = ms.ToArray();
             try
             {
                 this._logger.LogInformation("ClamAV scan begin for file {0}", file.FileName);
-                var clam = new ClamClient(this._configuration["ClamAVServer:URL"],
-                                          Convert.ToInt32(this._configuration["ClamAVServer:Port"]));
-                var scanResult = await clam.SendAndScanFileAsync(fileBytes);
+                ClamClient clam = new ClamClient(_options.URL,
+                                          Convert.ToInt32(_options.Port));
+                ClamScanResult scanResult = await clam.SendAndScanFileAsync(fileBytes);
                 switch (scanResult.Result)
                 {
                     case ClamScanResults.Clean:

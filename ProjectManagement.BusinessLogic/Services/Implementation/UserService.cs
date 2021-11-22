@@ -56,7 +56,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             _fileService.CheckFileForAvatar(file); // checking file size and extension 
             await _fileService.ScanFileForVirusesAsync(file);
             User user = await _userRepository.GetForEditByIdAsync(userId);
-            var ms = new MemoryStream();
+            MemoryStream ms = new MemoryStream();
             // Copy the file to the MemoryStream
             await file.CopyToAsync(ms);
             AppFile appFile = new AppFile(file.FileName,file.ContentType, ms.ToArray());

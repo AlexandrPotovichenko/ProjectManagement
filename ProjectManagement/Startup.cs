@@ -17,6 +17,7 @@ using ProjectManagement.Profiles;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json.Serialization;
 using ProjectManagement.CustomExceptionMiddleware;
+using ProjectManagement.Options;
 
 namespace ProjectManagement
 {
@@ -103,6 +104,9 @@ namespace ProjectManagement
                     }
                 });
             });
+            services.Configure<ClamAVServerOptions>(
+    Configuration.GetSection(ClamAVServerOptions.ClamAVServer));
+
             services.AddAutoMapper(typeof(ProjectManagementProfile));
         }
 

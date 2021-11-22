@@ -22,15 +22,13 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
         private readonly Mock<IBoardRepository> _boardRepositoryMock;
         private readonly Mock<IBoardMemberRepository> _boardMemberRepositoryMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
-        private readonly IUserManager _userManager;
+        private readonly Mock<IUserManager> _userManagerMock;
         private readonly BoardService _service;
 
         private int _currentUserId = 1;
-        private string _currentUserName = "Tom";
-
+       
         public BoardServiceTests()
         {
-
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(1));
@@ -47,25 +45,14 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             _userRepositoryMock.Setup(x => x.UnitOfWork)
                 .Returns(_unitOfWorkMock.Object);
 
-            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            var claims = new[]
-          {
-                new Claim(ClaimTypes.NameIdentifier, _currentUserId.ToString()),
-                new Claim(ClaimTypes.Name, _currentUserName)
-            };
-            var identity = new ClaimsIdentity(claims, "basic");
-            var principal = new ClaimsPrincipal(identity);
-            var httpContext = new DefaultHttpContext()
-            {
-                User = principal
-            };
-            mockHttpContextAccessor.Setup(_ => _.HttpContext).Returns(httpContext);
-            _userManager = new UserMananger(mockHttpContextAccessor.Object, _userRepositoryMock.Object);
-            _service = new BoardService(_boardRepositoryMock.Object, _boardMemberRepositoryMock.Object, _userManager);
+            _userManagerMock = new Mock<IUserManager>();
+            _userManagerMock.Setup(x => x.GetCurrentUserId()).Returns(_currentUserId);
+            
+            _service = new BoardService(_boardRepositoryMock.Object, _boardMemberRepositoryMock.Object, _userManagerMock.Object);
         }
 
         [Fact]
-        public async void GetBoardsAsync_Passed()
+        public async void GetBoardsAsync_BoardsExist_Passed()
         {
             //Arrange
             SetupGetBoards(GetBoards());
@@ -75,7 +62,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             Assert.Equal(3, boards.Count());
         }
         [Fact]
-        public async void GetBoardAsync_Passed()
+        public async void GetBoardAsync_ExistingId_Passed()
         {
             //Arrange
             int boardId = 1;
@@ -84,7 +71,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             BoardMember boardMember = new BoardMember() { UserId = 1 };
 
             boardMembers.Add(boardMember);
-            var item = new Board
+            Board item = new Board
             {
                 Id = boardId,
                 Name = boardName,
@@ -107,45 +94,46 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             BoardMember boardMember = new BoardMember() { UserId = 2 };
             List<BoardMember> boardMembers = new List<BoardMember>();
             boardMembers.Add(boardMember);
-            var item = new Board
+            Board item = new Board
             {
                 Id = boardId,
                 Name = boardName,
                 BoardMembers = boardMembers
             };
             SetupGetBoardById(item);
-            var memberSpec = new GetBoardMemberByUserIdSpecification(1, boardId);
+            GetBoardMemberByUserIdSpecification memberSpec = new GetBoardMemberByUserIdSpecification(1, boardId);
             _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(memberSpec)).Returns(Task.FromResult(boardMember));
             _boardRepositoryMock.Setup(x => x.GetWithItemsByIdAsync(1)).Returns(Task.FromResult(item));
-
             //Act
             //Assert
-
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.GetBoardByIdAsync(1));
-
+            _boardRepositoryMock.Verify(service => service.GetWithItemsAsync(It.IsAny<int>()), Times.Never);
         }
         [Fact]
         public async void GetBoardAsync_BoardNotExist_ExceptionIsThrown()
         {
             //Arrange
             int boardId = 1;
+            int wrongBoardId = 2;
+            int userId = 1;
             string boardName = "Board 1";
-            BoardMember boardMember = new BoardMember() { UserId = 1 };
+            BoardMember boardMember = new BoardMember() { UserId = userId };
             List<BoardMember> boardMembers = new List<BoardMember>();
             boardMembers.Add(boardMember);
-            var item = new Board
+            Board item = new Board
             {
                 Id = boardId,
                 Name = boardName,
                 BoardMembers = boardMembers
             };
             SetupGetBoardById(item);
-            var memberSpec = new GetBoardMemberByUserIdSpecification(1, boardId);
+            GetBoardMemberByUserIdSpecification memberSpec = new GetBoardMemberByUserIdSpecification(userId, boardId);
             _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(memberSpec)).Returns(Task.FromResult(boardMember));
             _boardRepositoryMock.Setup(x => x.GetWithItemsByIdAsync(1)).Returns(Task.FromResult(item));
             //Act
             //Assert
-            await Assert.ThrowsAsync<WebAppException>(async () => await _service.GetBoardByIdAsync(2));
+            await Assert.ThrowsAsync<WebAppException>(async () => await _service.GetBoardByIdAsync(wrongBoardId));
+            _boardRepositoryMock.Verify(service => service.GetWithItemsAsync(It.IsAny<int>()), Times.Never);
         }
         [Fact]
         public async void DeleteBoardAsync_UserIsNotABoardMember_ExceptionIsThrown()
@@ -157,7 +145,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             BoardMember boardMember = new BoardMember() { UserId = 2 };
             List<BoardMember> boardMembers = new List<BoardMember>();
             boardMembers.Add(boardMember);
-            var item = new Board
+            Board item = new Board
             {
                 Id = boardId,
                 Name = boardName,
@@ -165,13 +153,15 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             };
             SetupGetBoardById(item);
             _boardRepositoryMock.Setup(repo => repo.DeleteByIdAsync(boardId)).Returns(Task.CompletedTask);
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(bs => bs.BoardId == boardId && bs.UserId == UserId))).Returns(Task.FromResult(boardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(bs => bs.BoardId == boardId && bs.UserId == UserId)))
+                .Returns(Task.FromResult(boardMember));
             // Act
             // Assert
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.DeleteBoardAsync(boardId));
+            _boardRepositoryMock.Verify(service => service.DeleteByIdAsync(It.IsAny<int>()), Times.Never);
         }
         [Fact]
-        public async void CreateBoardAsync_Passed()
+        public async void CreateBoardAsync_ExistingId_Passed()
         {
             //Arrange
             int boardId = 1;
@@ -180,7 +170,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             BoardMember boardMember = new BoardMember() { UserId = 1, Role = Role.Admin };
             List<BoardMember> boardMembers = new List<BoardMember>();
             boardMembers.Add(boardMember);
-            var item = new Board
+            Board item = new Board
             {
                 Id = boardId,
                 Name = boardName,
@@ -203,7 +193,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             BoardMember boardMember = new BoardMember() { UserId = 1, Role = Role.Admin };
             List<BoardMember> boardMembers = new List<BoardMember>();
             boardMembers.Add(boardMember);
-            var item = new Board
+            Board item = new Board
             {
                 Id = boardId,
                 Name = boardName,
@@ -218,6 +208,32 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             _boardRepositoryMock.Verify(repo => repo.DeleteByIdAsync(boardId), Times.Once);
         }
         [Fact]
+        public async void DeleteBoardAsync_NotExistingId_ExceptionIsThrown()
+        {
+            //Arrange
+            int boardId = 1;
+            int wrongBoardId = 2;
+            int userId = 1;
+            string boardName = "Board 1";
+            BoardMember boardMember = new BoardMember() { UserId = userId, Role = Role.Admin };
+            List<BoardMember> boardMembers = new List<BoardMember>();
+            boardMembers.Add(boardMember);
+            Board item = new Board
+            {
+                Id = boardId,
+                Name = boardName,
+                BoardMembers = boardMembers
+            };
+            SetupGetBoardById(item);
+            _boardRepositoryMock.Setup(repo => repo.DeleteByIdAsync(boardId)).Returns(Task.CompletedTask);
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(bm=>bm.BoardId == boardId && bm.UserId== userId)))
+                .Returns(Task.FromResult(boardMember));
+            // Act
+            // Assert
+            await Assert.ThrowsAsync<WebAppException>(async () => await _service.DeleteBoardAsync(wrongBoardId));
+            _boardRepositoryMock.Verify(service => service.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        }
+        [Fact]
         public async void GetAllBoardMembersAsync_ExistingId_Passed()
         {
             //Arrange
@@ -228,7 +244,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             BoardMember boardMember = board.BoardMembers.FirstOrDefault(m => m.UserId == 1);
             SetupGetBoardById(board);
             _boardRepositoryMock.Setup(x => x.GetWithMembersAsync(boardId)).Returns(Task.FromResult(board));
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms=>ms.BoardId == boardId&&ms.UserId == userId))).Returns(Task.FromResult(boardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms=>ms.BoardId == boardId&&ms.UserId == userId)))
+                .Returns(Task.FromResult(boardMember));
             // Act
             IEnumerable<BoardMember> members = await _service.GetAllBoardMembersAsync(boardId);
             // Assert
@@ -251,6 +268,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             // Act
             // Assert
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.GetAllBoardMembersAsync(boardId));
+            _boardRepositoryMock.Verify(service => service.GetByIdAsync(It.IsAny<int>()), Times.Never);
         }
         [Fact]
         public async void GetAllBoardMembersAsync_UserIsNotABoardMember_ExceptionIsThrown()
@@ -266,6 +284,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             // Act
             // Assert
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.GetAllBoardMembersAsync(boardId));
+            _boardRepositoryMock.Verify(service => service.GetByIdAsync(It.IsAny<int>()), Times.Never);
         }
         [Fact]
         public async void AddMemberToBoardAsync_ExistingId_Passed()
@@ -281,6 +300,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms =>
             ms.UserId == _currentUserId && ms.BoardId == boardId)))
                 .Returns(Task.FromResult(currentMember));
+            _userManagerMock.Setup(x => x.IsUserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
             _userRepositoryMock.Setup(x => x.UserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b=>b.BoardMembers.Any(bm=>bm.UserId == newMemberUserId)))).Returns(Task.CompletedTask);
             // Act
@@ -309,6 +329,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             // Act
             // Assert
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.AddMemberToBoardAsync(newMemberUserId, boardId, role));
+            _boardRepositoryMock.Verify(service => service.UpdateAsync(It.IsAny<Board>()), Times.Never);
         }
         [Fact]
         public async void AddMemberToBoardAsync_UserIsNotAnAdmin_ExceptionIsThrown()
@@ -332,6 +353,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             // Act
             // Assert
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.AddMemberToBoardAsync(newMemberUserId, boardId, role));
+            _boardRepositoryMock.Verify(service => service.UpdateAsync(It.IsAny<Board>()), Times.Never);
         }
         [Fact]
         public async void AddMemberToBoardAsync__NotExistingBoardId_ExceptionIsThrown()
@@ -354,8 +376,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             // Assert
             //increase boardId by one 
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.AddMemberToBoardAsync(newMemberUserId, boardId+1, role));
+            _boardRepositoryMock.Verify(service => service.UpdateAsync(It.IsAny<Board>()), Times.Never);
         }
-
         [Fact]
         public async void RemoveMemberFromBoardAsync_ExistingId_Passed()
         {
@@ -369,7 +391,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             SetupGetBoardById(board);
             _boardRepositoryMock.Setup(repo => repo.GetBoardMemberByIdAsync(boardMemberForDelete.Id)).Returns(Task.FromResult(boardMemberForDelete));
             //GetCurrentBoardMember
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId))).Returns(Task.FromResult(currentBoardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId)))
+                .Returns(Task.FromResult(currentBoardMember));
             _boardRepositoryMock.Setup(x => x.GetForEditByIdAsync(boardId)).Returns(Task.FromResult(board));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.Id == boardId))).Returns(Task.CompletedTask);
             // Act
@@ -389,12 +412,15 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             BoardMember currentBoardMember = board.BoardMembers.FirstOrDefault(bm => bm.UserId == _currentUserId);
             SetupGetBoardById(board);
             //GetCurrentBoardMember
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId))).Returns(Task.FromResult(currentBoardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId)))
+                .Returns(Task.FromResult(currentBoardMember));
             _boardRepositoryMock.Setup(x => x.GetForEditByIdAsync(boardId)).Returns(Task.FromResult(board));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.Id == boardId))).Returns(Task.CompletedTask);
             // Act
             // Assert
             await Assert.ThrowsAsync<WebAppException>(async () => await _service.RemoveMemberFromBoardAsync(memberIdForDelete));
+            ////
+            _boardRepositoryMock.Verify(service => service.UpdateAsync(It.IsAny<Board>()), Times.Never);
         }
         [Fact]
         public async void RemoveMemberFromBoardAsync_UserIsNotAnAdmin_ExceptionIsThrown()
@@ -411,7 +437,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             SetupGetBoardById(board);
             _boardRepositoryMock.Setup(repo => repo.GetBoardMemberByIdAsync(boardMemberForDelete.Id)).Returns(Task.FromResult(boardMemberForDelete));
             //GetCurrentBoardMember
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId))).Returns(Task.FromResult(currentBoardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId)))
+                .Returns(Task.FromResult(currentBoardMember));
             _boardRepositoryMock.Setup(x => x.GetForEditByIdAsync(boardId)).Returns(Task.FromResult(board));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.Id == boardId))).Returns(Task.CompletedTask);
             // Act
@@ -431,7 +458,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             SetupGetBoardById(board);
             _boardRepositoryMock.Setup(repo => repo.GetBoardMemberByIdAsync(memberIdForUpdate)).Returns(Task.FromResult(boardMemberForUpdate));
             //GetCurrentBoardMember
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId))).Returns(Task.FromResult(currentBoardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId)))
+                .Returns(Task.FromResult(currentBoardMember));
             _boardRepositoryMock.Setup(x => x.GetForEditByIdAsync(boardId)).Returns(Task.FromResult(board));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.Id == boardId))).Returns(Task.CompletedTask);
             // Act
@@ -454,7 +482,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             SetupGetBoardById(board);
             _boardRepositoryMock.Setup(repo => repo.GetBoardMemberByIdAsync(memberIdForUpdate)).Returns(Task.FromResult(boardMemberForUpdate));
             //GetCurrentBoardMember
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId))).Returns(Task.FromResult(currentBoardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId)))
+                .Returns(Task.FromResult(currentBoardMember));
             _boardRepositoryMock.Setup(x => x.GetForEditByIdAsync(boardId)).Returns(Task.FromResult(board));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.Id == boardId))).Returns(Task.CompletedTask);
             // Act
@@ -475,7 +504,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             SetupGetBoardById(board);
             _boardRepositoryMock.Setup(repo => repo.GetBoardMemberByIdAsync(memberIdForUpdate)).Returns(Task.FromResult(boardMemberForUpdate));
             //GetCurrentBoardMember
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId))).Returns(Task.FromResult(currentBoardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId)))
+                .Returns(Task.FromResult(currentBoardMember));
             _boardRepositoryMock.Setup(x => x.GetForEditByIdAsync(boardId)).Returns(Task.FromResult(board));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.Id == boardId))).Returns(Task.CompletedTask);
             // Act
@@ -497,7 +527,8 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             SetupGetBoardById(board);
             _boardRepositoryMock.Setup(repo => repo.GetBoardMemberByIdAsync(memberIdForUpdate)).Returns(Task.FromResult(boardMemberForUpdate));
             //GetCurrentBoardMember
-            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId))).Returns(Task.FromResult(currentBoardMember));
+            _boardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetBoardMemberByUserIdSpecification>(ms => ms.UserId == _currentUserId && ms.BoardId == boardId)))
+                .Returns(Task.FromResult(currentBoardMember));
             _boardRepositoryMock.Setup(x => x.GetForEditByIdAsync(boardId)).Returns(Task.FromResult(board));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.Id == boardId))).Returns(Task.CompletedTask);
             // Act
