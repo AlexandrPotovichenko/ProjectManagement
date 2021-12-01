@@ -301,7 +301,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             ms.UserId == _currentUserId && ms.BoardId == boardId)))
                 .Returns(Task.FromResult(currentMember));
             _userManagerMock.Setup(x => x.IsUserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
-            _userRepositoryMock.Setup(x => x.UserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
+            _userRepositoryMock.Setup(x => x.IsUserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b=>b.BoardMembers.Any(bm=>bm.UserId == newMemberUserId)))).Returns(Task.CompletedTask);
             // Act
             BoardMember boardMember = await _service.AddMemberToBoardAsync(newMemberUserId, boardId, role);
@@ -324,7 +324,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             ms.UserId == _currentUserId && ms.BoardId == boardId)))
                 .Returns(Task.FromResult(currentMember));
             // here we will return false, which means that a user with such an ID does not exist 
-            _userRepositoryMock.Setup(x => x.UserExistsAsync(newMemberUserId)).Returns(Task.FromResult(false));
+            _userRepositoryMock.Setup(x => x.IsUserExistsAsync(newMemberUserId)).Returns(Task.FromResult(false));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.BoardMembers.Any(bm => bm.UserId == newMemberUserId)))).Returns(Task.CompletedTask);
             // Act
             // Assert
@@ -348,7 +348,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             ms.UserId == _currentUserId && ms.BoardId == boardId)))
                 .Returns(Task.FromResult(currentMember));
             // return true, which means that a user with such an ID exists
-            _userRepositoryMock.Setup(x => x.UserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
+            _userRepositoryMock.Setup(x => x.IsUserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.BoardMembers.Any(bm => bm.UserId == newMemberUserId)))).Returns(Task.CompletedTask);
             // Act
             // Assert
@@ -370,7 +370,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             ms.UserId == _currentUserId && ms.BoardId == boardId)))
                 .Returns(Task.FromResult(currentMember));
             // return true, which means that a user with such an ID exists
-            _userRepositoryMock.Setup(x => x.UserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
+            _userRepositoryMock.Setup(x => x.IsUserExistsAsync(newMemberUserId)).Returns(Task.FromResult(true));
             _boardRepositoryMock.Setup(x => x.UpdateAsync(It.Is<Board>(b => b.BoardMembers.Any(bm => bm.UserId == newMemberUserId)))).Returns(Task.CompletedTask);
             // Act
             // Assert

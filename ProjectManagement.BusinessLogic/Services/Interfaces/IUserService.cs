@@ -9,7 +9,8 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
     {
         Task<User> AuthenticateUserAsync(string login, string password);
         Task<User> RegisterUserAsync(string login, string password);
-        Task ChangePasswordAsync(string login, string password, string newPassword);
+        Task UpdateUserAsync(int userId,string login, string password);
+        Task DeleteUserAsync(int userId);
         Task<IEnumerable<User>> GetUsersAsync();
         Task<AppFile> DownloadAvatarAsync(int userId);
         Task UploadAvatarAsync(int userId, IFormFile file);

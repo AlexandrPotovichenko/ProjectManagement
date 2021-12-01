@@ -20,15 +20,17 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         {
             return await _dbSet.FirstOrDefaultAsync(x => x.Id == userId);
         }
-
         public async Task<User> GetWithItemsByIdAsync(int userId)
         {
             return await _context.Users.Include(u=>u.Avatar).Where(x => x.Id == userId).FirstOrDefaultAsync();
         }
-
-        public async Task<bool> UserExistsAsync(int userId)
+        public async Task<bool> IsUserExistsAsync(int userId)
         {
             return await _dbSet.AnyAsync(u => u.Id == userId);
+        }
+        public async Task<bool> IsUserExistsAsync(string userName)
+        {
+            return await _dbSet.AnyAsync(u => u.Name == userName);
         }
     }
 }

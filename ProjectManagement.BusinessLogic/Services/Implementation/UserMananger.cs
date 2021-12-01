@@ -37,7 +37,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         }
         public async Task<bool> IsUserExistsAsync(int userId)
         {
-            return await _userRepository.UserExistsAsync(userId); 
+            return await _userRepository.IsUserExistsAsync(userId); 
         }
     }
 }

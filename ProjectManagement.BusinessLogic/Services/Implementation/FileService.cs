@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using nClam;
 using ProjectManagement.BusinessLogic.Exceptions;
 using ProjectManagement.BusinessLogic.Options;
@@ -20,11 +21,10 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     public class FileService : IFileService
     {
         private readonly ILogger<FileService> _logger;
-        //private readonly IConfiguration _configuration;
-        private readonly ClamAVServerOptions _options;
+        private readonly IOptions<ClamAVServerOptions> _options;
         // Upload the file if less than 2 MB
         private const int _maxSizeForAvatarFile = 2097152;
-        public FileService(ILogger<FileService> logger, ClamAVServerOptions options)
+        public FileService(ILogger<FileService> logger, IOptions<ClamAVServerOptions> options)
         {
             _logger = logger;
             _options = options;
@@ -55,8 +55,9 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             try
             {
                 this._logger.LogInformation("ClamAV scan begin for file {0}", file.FileName);
-                ClamClient clam = new ClamClient(_options.URL,
-                                          Convert.ToInt32(_options.Port));
+                ClamAVServerOptions clamAVServerOptions = _options.Value;
+                ClamClient clam = new ClamClient(clamAVServerOptions.URL,
+                                          Convert.ToInt32(clamAVServerOptions.Port));
                 ClamScanResult scanResult = await clam.SendAndScanFileAsync(fileBytes);
                 switch (scanResult.Result)
                 {
@@ -86,7 +87,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         public void CheckFileForAvatar(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                throw new WebAppException((int)HttpStatusCode.UnprocessableEntity, "file not selected");
+                throw new WebAppException((int)HttpStatusCode.UnprocessableEntity, "File not selected");
             // Upload the file if less than 2 MB
             if (file.Length > _maxSizeForAvatarFile)
             {

@@ -17,7 +17,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         private readonly IBoardRepository _boardRepository;
         private readonly IBoardMemberRepository _boardMemberRepository;
         private readonly IUserManager _userManager;
-        public BoardService(IBoardRepository boardRepository,  IBoardMemberRepository boardMemberRepository, IUserManager userManager)
+        public BoardService(IBoardRepository boardRepository, IBoardMemberRepository boardMemberRepository, IUserManager userManager)
         {
             _boardRepository = boardRepository;
             _boardMemberRepository = boardMemberRepository;
