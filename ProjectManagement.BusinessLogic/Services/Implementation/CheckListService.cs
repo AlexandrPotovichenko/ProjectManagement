@@ -28,7 +28,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CardMember currentCardMember = await GetCurrentCardMember(cardId);
             if (!currentCardMember.CanUpdate)
             {
-                throw new Exception();
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
             Card card = await GetForEditByIdAsync(cardId);
             CheckList checkList = new CheckList(name);

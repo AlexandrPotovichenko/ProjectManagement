@@ -36,7 +36,7 @@ namespace ProjectManagement.Controllers
         [Authorize] 
         public async Task<ActionResult<BoardDto>> GetBoardAsync(int boardId)
         {
-            Board board = await _BoardService.GetBoardAsync(boardId);
+            Board board = await _BoardService.GetBoardByIdAsync(boardId);
             BoardDto boardDto = _mapper.Map<BoardDto>(board);
             return Ok(boardDto);
         }

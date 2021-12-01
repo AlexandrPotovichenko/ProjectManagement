@@ -21,7 +21,7 @@ namespace ProjectManagement.Domain.Models
             MemberId = cardMemberId;
             Description = description;
             Date = DateTime.Now;
-            IsComment = false;
+            IsComment = isComment;
         }
     }
 }

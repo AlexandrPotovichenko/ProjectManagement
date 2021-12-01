@@ -10,7 +10,7 @@ namespace ProjectManagement.BusinessLogic.Services.Interfaces
         Task<Card> CreateCardAsync(string name, string description, int listId);
         Task<Card> GetCardAsync(int cardId);
         Task DeleteCardAsync(int cardId);
-        Task<IEnumerable<CardMember>> GetMembershipOfMemberOnCardAsync(int cardId);
+        Task<IEnumerable<CardMember>> GetAllCardMembersAsync(int cardId);
         Task<CardMember> AddMemberToCardAsync(int newMemberUserId, int cardId, Role role);
         Task RemoveMemberFromCardAsync(int memberId, int cardId);
         Task UpdateMembershipOfMemberOnCardAsync(int cardId, int memberId, Role newRole);

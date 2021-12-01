@@ -14,9 +14,9 @@ using ProjectManagement.DataAccess.Context;
 using ProjectManagement.DataAccess.Repositories.Implementation;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Profiles;
-using Microsoft.AspNetCore.Http;
 using System.Text.Json.Serialization;
 using ProjectManagement.CustomExceptionMiddleware;
+using ProjectManagement.BusinessLogic.Options;
 
 namespace ProjectManagement
 {
@@ -47,23 +47,6 @@ namespace ProjectManagement
             services.AddScoped<ICheckListService, CheckListService>();
             services.AddScoped<IBoardMemberRepository, BoardMemberRepository>();
             services.AddScoped<ICardMemberRepository, CardMemberRepository>();
-
-
-            //services.AddScoped<IBoardService, BoardService>(x =>
-            //            new BoardService(
-            //                x.GetRequiredService<IBoardRepository>(), x.GetRequiredService<IUserRepository>(),
-            //                x.GetRequiredService<IBoardMemberRepository>(), x.GetRequiredService<IUserManager>()));
-            //services.AddScoped<ICardService, CardService>(x =>
-            //            new CardService(
-            //                x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IListRepository>(),
-            //                x.GetRequiredService<ICardMemberRepository>(), x.GetRequiredService<IUserManager>()));
-            //services.AddScoped<ICheckListService, CheckListService>(x =>
-            //            new CheckListService(x.GetRequiredService<ICheckListRepository>(),
-            //            x.GetRequiredService<ICardRepository>(), x.GetRequiredService<IUserManager>()));
-            //services.AddScoped<IBoardMemberRepository, BoardMemberRepository>(x =>
-            //            new BoardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
-            //services.AddScoped<ICardMemberRepository, CardMemberRepository>(x =>
-            //            new CardMemberRepository(x.GetRequiredService<ProjectManagementContext>()));
             services.AddScoped<IUserManager, UserMananger>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IUserService, UserService>();
@@ -103,6 +86,7 @@ namespace ProjectManagement
                     }
                 });
             });
+            services.Configure<ClamAVServerOptions>(Configuration.GetSection(ClamAVServerOptions.ClamAVServer));
             services.AddAutoMapper(typeof(ProjectManagementProfile));
         }
 

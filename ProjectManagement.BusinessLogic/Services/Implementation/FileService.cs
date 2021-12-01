@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using nClam;
 using ProjectManagement.BusinessLogic.Exceptions;
+using ProjectManagement.BusinessLogic.Options;
 using ProjectManagement.BusinessLogic.Services.Interfaces;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Domain.Models;
@@ -19,13 +21,13 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     public class FileService : IFileService
     {
         private readonly ILogger<FileService> _logger;
-        private readonly IConfiguration _configuration;
+        private readonly IOptions<ClamAVServerOptions> _options;
         // Upload the file if less than 2 MB
         private const int _maxSizeForAvatarFile = 2097152;
-        public FileService(ILogger<FileService> logger, IConfiguration configuration)
+        public FileService(ILogger<FileService> logger, IOptions<ClamAVServerOptions> options)
         {
             _logger = logger;
-            _configuration = configuration;
+            _options = options;
         }
         
         public async Task ScanFileForVirusesAsync(IFormFile file)
@@ -45,17 +47,18 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             }
         }
 
-        public async Task<bool?> IsFileInfectedAsync(IFormFile file)
+        private async Task<bool?> IsFileInfectedAsync(IFormFile file)
         {
-            var ms = new MemoryStream();
+            MemoryStream ms = new MemoryStream();
             file.OpenReadStream().CopyTo(ms);
             byte[] fileBytes = ms.ToArray();
             try
             {
                 this._logger.LogInformation("ClamAV scan begin for file {0}", file.FileName);
-                var clam = new ClamClient(this._configuration["ClamAVServer:URL"],
-                                          Convert.ToInt32(this._configuration["ClamAVServer:Port"]));
-                var scanResult = await clam.SendAndScanFileAsync(fileBytes);
+                ClamAVServerOptions clamAVServerOptions = _options.Value;
+                ClamClient clam = new ClamClient(clamAVServerOptions.URL,
+                                          Convert.ToInt32(clamAVServerOptions.Port));
+                ClamScanResult scanResult = await clam.SendAndScanFileAsync(fileBytes);
                 switch (scanResult.Result)
                 {
                     case ClamScanResults.Clean:
@@ -84,7 +87,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         public void CheckFileForAvatar(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                throw new WebAppException((int)HttpStatusCode.UnprocessableEntity, "file not selected");
+                throw new WebAppException((int)HttpStatusCode.UnprocessableEntity, "File not selected");
             // Upload the file if less than 2 MB
             if (file.Length > _maxSizeForAvatarFile)
             {
