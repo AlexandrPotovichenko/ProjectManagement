@@ -9,6 +9,7 @@ namespace ProjectManagement.Domain.Models
         public string Name { get; set; }
         public string PasswordHash { get; set; }
         public AppFile Avatar { get; set; }
+        public bool CanAdministerUsers { get; set; }
         public User()
         {
         }

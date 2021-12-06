@@ -37,22 +37,22 @@ namespace ProjectManagement.Controllers
             return Created("~api/Users/" + user.Id, getUserDto);
         }
 
-        //[HttpPut("{userId}")] // PUT api/Users/123
-        //[Authorize]
-        //public async Task<ActionResult> UpdateUserAsync(int userId, [FromBody] PostUserDto itemDto)
-        //{
-        //    await _userService.UpdateUserAsync(userId,itemDto.Name, itemDto.Password);           
-        //    return Ok();
-        //}
+        [HttpPut("{userId}")] // PUT api/Users/123
+        [Authorize]
+        public async Task<ActionResult> UpdateUserAsync(int userId, [FromBody] PostUserDto itemDto)
+        {
+            await _userService.UpdateUserAsync(userId, itemDto.Name, itemDto.Password);
+            return Ok();
+        }
 
-        [HttpPost("{userId}/avatar")]
+        [HttpPost("{userId}/avatar")] // POST api/Users/123/avatar
         public async Task<ActionResult> UploadAvatarAsync(int userId,IFormFile file)
         {
             await _userService.UploadAvatarAsync(userId,file);
             return Ok("The file is successfully uploaded.");
         }
 
-        [HttpGet("{userId}/avatar")]
+        [HttpGet("{userId}/avatar")] // GET api/Users/123/avatar
         public async Task<ActionResult> DownloadAvatarAsync(int userId)
         {
             AppFile avatar = await _userService.DownloadAvatarAsync(userId);

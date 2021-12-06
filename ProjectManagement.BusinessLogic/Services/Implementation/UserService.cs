@@ -16,12 +16,14 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IUserManager _userManager;
         private readonly IBoardMemberRepository _boardMemberRepository;
         private readonly ICardMemberRepository _cardMemberRepository;
         private readonly IFileService _fileService;
-        public UserService(IUserRepository userRepository, IBoardMemberRepository boardMemberRepository, ICardMemberRepository cardMemberRepository, IFileService fileService)
+        public UserService(IUserRepository userRepository, IUserManager userManager, IBoardMemberRepository boardMemberRepository, ICardMemberRepository cardMemberRepository, IFileService fileService)
         {
             _userRepository = userRepository;
+            _userManager = userManager;
             _boardMemberRepository = boardMemberRepository;
             _cardMemberRepository = cardMemberRepository;
             _fileService = fileService;
@@ -41,7 +43,12 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         }
         public async Task<User> RegisterUserAsync(string login, string password)
         {
-            CheckLogin(login);
+            User currentUser = await GetCurrentUser();
+            if (!currentUser.CanAdministerUsers)
+            {
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
+            }
+            await CheckLogin(login);
             string passwordHash = BCryptNet.HashPassword(password);
             User user = new User(login, passwordHash);
             user = await _userRepository.InsertAsync(user);
@@ -50,13 +57,17 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         }
         public async Task UpdateUserAsync(int userId,string name, string password)
         {
-            User user = await _userRepository.GetForEditByIdAsync(userId);
-            if(user == null)
+            User currentUser = await GetCurrentUser();
+            if (!currentUser.CanAdministerUsers)
             {
-                throw new WebAppException((int)HttpStatusCode.Unauthorized, "Login or password is incorrect.");
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
-            CheckLogin(name);
-            user.Name = name;
+            User user = await GetUserById(userId);
+            if(user.Name!=name)
+            {
+                await CheckLogin(name);
+                user.Name = name;
+            }
             string passwordHash = BCryptNet.HashPassword(password);
             user.PasswordHash = passwordHash;
             await _userRepository.UpdateAsync(user);
@@ -64,6 +75,11 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         }
         public async Task DeleteUserAsync(int userId)
         {
+            User currentUser = await GetCurrentUser();
+            if (!currentUser.CanAdministerUsers)
+            {
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
+            }
             User user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
@@ -83,6 +99,11 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
         }
         public async Task UploadAvatarAsync(int userId, IFormFile file)
         {
+            int currentUserId = _userManager.GetCurrentUserId();
+            if (userId!=currentUserId)
+            {
+                throw new WebAppException((int)HttpStatusCode.NotAcceptable, "A user can only upload an Avatar for his own profile.");
+            }
             User user = await _userRepository.GetForEditByIdAsync(userId);
             Guard.Against.NullObject(userId, user, "User");
             _fileService.CheckFileForAvatar(file); // checking file size and extension 
@@ -106,13 +127,26 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             }           
             return user.Avatar;
         }
-        private async void CheckLogin(string login)
+        private async Task CheckLogin(string login)
         {
             bool loginAlreadyExists = await _userRepository.IsUserExistsAsync(login);
             if (loginAlreadyExists)
             {
                 throw new WebAppException((int)HttpStatusCode.Conflict, "A user with this login already exists!");
             }
+        }
+        private async Task<User> GetCurrentUser()
+        {
+            int currentUserId = _userManager.GetCurrentUserId();
+            User currentUser = await _userRepository.GetByIdAsync(currentUserId);
+            Guard.Against.NullObject(currentUserId, currentUser, "User");
+            return currentUser;
+        }
+        private async Task<User> GetUserById(int userId)
+        {
+            User user = await _userRepository.GetForEditByIdAsync(userId);
+            Guard.Against.NullObject(userId, user, "User");
+            return user;
         }
     }
 }

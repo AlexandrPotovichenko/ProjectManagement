@@ -55,7 +55,8 @@ namespace ProjectManagement.DataAccess.Context
             });
             modelBuilder.Entity<User>().HasKey(u => u.Id);
             modelBuilder.Entity<User>().HasOne(u => u.Avatar);
-            modelBuilder.Entity<User>().HasData(new User { Id = 1, Name = "John Doe" });
+            modelBuilder.Entity<User>().HasData(new User { Id = 1, Name = "admin",
+                PasswordHash=$"$2a$11$Qy0GEfdSnqxaWN7A6DOlDeid0Yvo7Yzm.etE5P13Pc78MRv7ulY7u",CanAdministerUsers=true });// Hash of Password 'administrator'
             modelBuilder.Entity<CardAction>(ca =>
             {
                 ca.HasKey(x => x.Id);

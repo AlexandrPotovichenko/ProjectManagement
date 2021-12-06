@@ -6,11 +6,7 @@ using ProjectManagement.BusinessLogic.Services.Implementation;
 using ProjectManagement.BusinessLogic.Services.Interfaces;
 using ProjectManagement.DataAccess.Repositories.Interfaces;
 using ProjectManagement.Domain.Models;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -21,8 +17,12 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
     {
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IUserManager> _userManagerMock;
+        private readonly Mock<IBoardMemberRepository> _boardMemberRepositoryMock;
+        private readonly Mock<ICardMemberRepository> _cardMemberRepositoryMock;
         private readonly Mock<IFileService> _fileServiceMock;
         private readonly UserService _service;
+        private int _currentUserId = 1;
         public UserServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
@@ -31,8 +31,12 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             _userRepositoryMock = new Mock<IUserRepository>();
             _userRepositoryMock.Setup(x => x.UnitOfWork)
                 .Returns(_unitOfWorkMock.Object);
+            _userManagerMock = new Mock<IUserManager>();
+            _userManagerMock.Setup(x => x.GetCurrentUserId()).Returns(_currentUserId);
+            _boardMemberRepositoryMock = new Mock<IBoardMemberRepository>();
+            _cardMemberRepositoryMock = new Mock<ICardMemberRepository>();
             _fileServiceMock = new Mock<IFileService>();
-            _service = new UserService(_userRepositoryMock.Object, _fileServiceMock.Object);
+            _service = new UserService(_userRepositoryMock.Object, _userManagerMock.Object, _boardMemberRepositoryMock.Object, _cardMemberRepositoryMock.Object, _fileServiceMock.Object);
         }
         [Fact]
         public async void AuthenticateUserAsync_CorrectLoginAndPassword_Passed()
@@ -61,7 +65,6 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             User user = new User(login, passwordHash);
             _userRepositoryMock.Setup(x => x.GetByNameAsync(login))
                             .Returns(Task.FromResult(user));
-
             //Act
             var exception = await Record.ExceptionAsync(() => _service.AuthenticateUserAsync(wrongLogin, password));
             //Assert
@@ -92,6 +95,13 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             string password = "FakePassword";
             string passwordHash = @"$2a$11$T38ECJwdEaDqGJBonPhmN.SA6q6CyHVJq5.XjTBY/MNOp78lbUjgG";
             User user = new User(login, passwordHash);
+            User currentUser = new User
+            {
+                Id = 1,
+                Name = "admin",
+                CanAdministerUsers = true
+            };
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(_currentUserId)).Returns(Task.FromResult(currentUser));
             _userRepositoryMock.Setup(x => x.InsertAsync(It.Is<User>(u => u.Name == login)))
                             .Returns(Task.FromResult(user));
             //Act
@@ -106,6 +116,13 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             //Arrange
             string existingLogin = "FakeLogin";
             string password = "FakePassword";
+            User currentUser = new User
+            {
+                Id = 1,
+                Name = "admin",
+                CanAdministerUsers = true
+            };
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(_currentUserId)).Returns(Task.FromResult(currentUser));
             _userRepositoryMock.Setup(x => x.IsUserExistsAsync(existingLogin))
                             .Returns(Task.FromResult(true));
             //Act
@@ -124,7 +141,6 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             string login = "FakeLogin";
             string passwordHash = @"$2a$11$T38ECJwdEaDqGJBonPhmN.SA6q6CyHVJq5.XjTBY/MNOp78lbUjgG";
             User user = new User(login, passwordHash);
-
             _userRepositoryMock.Setup(x => x.GetForEditByIdAsync(userId)).Returns(Task.FromResult(user));
             using (var stream = GenerateStreamFromString(content))
             {
@@ -151,7 +167,13 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             string login = "FakeLogin";
             string passwordHash = @"$2a$11$T38ECJwdEaDqGJBonPhmN.SA6q6CyHVJq5.XjTBY/MNOp78lbUjgG";
             User user = new User(login, passwordHash);
-
+            User currentUser = new User
+            {
+                Id = 1,
+                Name = "admin",
+                CanAdministerUsers = true
+            };
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(_currentUserId)).Returns(Task.FromResult(currentUser));
             _userRepositoryMock.Setup(x => x.GetForEditByIdAsync(userId)).Returns(Task.FromResult(user));
             using (var stream = GenerateStreamFromString(content))
             {
@@ -166,7 +188,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
                 _fileServiceMock.Verify(x => x.CheckFileForAvatar(It.IsAny<IFormFile>()), Times.Never);
                 _fileServiceMock.Verify(x => x.ScanFileForVirusesAsync(It.IsAny<IFormFile>()), Times.Never);
                 Assert.NotNull(exception);
-                Assert.Equal("No User found with id 2", exception.Message);
+                Assert.Equal("A user can only upload an Avatar for his own profile.", exception.Message);
             }
         }
         [Fact]
