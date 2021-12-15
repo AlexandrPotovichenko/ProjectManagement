@@ -61,6 +61,10 @@ namespace ProjectManagement.DataAccess.Context
             {
                 ca.HasKey(x => x.Id);
                 ca.Property(t => t.Date).HasColumnType("DateTime");
+                ca.HasOne(t => t.Card).WithMany(c=>c.Actions).HasForeignKey("CardId").OnDelete(DeleteBehavior.NoAction);
+                ca.HasOne(t => t.CardMember).WithMany().HasForeignKey("CardMemberId").OnDelete(DeleteBehavior.NoAction);
+                //ca.HasOne<CardMember>().WithMany().HasForeignKey(c=>c.CardMemberId);
+
             });
             modelBuilder.Entity<AppFile>(af=>
             { 

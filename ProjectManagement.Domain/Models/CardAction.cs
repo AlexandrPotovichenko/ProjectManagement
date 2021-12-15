@@ -8,7 +8,7 @@ namespace ProjectManagement.Domain.Models
         public int Id { get; set; }
         public int CardId { get; set; }
         public Card Card { get; set; }
-        public int MemberId { get; set; }
+        public int CardMemberId { get; set; }
         public CardMember CardMember { get; set; }
         public DateTime Date { get; set; }
         public string Description { get; set; }
@@ -18,7 +18,7 @@ namespace ProjectManagement.Domain.Models
         }
         public CardAction(int cardMemberId,string description,bool isComment=false)
         {
-            MemberId = cardMemberId;
+            CardMemberId = cardMemberId;
             Description = description;
             Date = DateTime.Now;
             IsComment = isComment;

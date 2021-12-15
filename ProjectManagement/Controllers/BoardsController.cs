@@ -56,7 +56,7 @@ namespace ProjectManagement.Controllers
         {
             BoardMember boardMember = await _BoardService.AddMemberToBoardAsync(itemDto.UserId,boardId, itemDto.Role);
             BoardMemberDto boardMemberDto = _mapper.Map<BoardMemberDto>(boardMember);
-            return Created("~api/Boards/" + boardId+"/members/"+ boardMember.Id, boardMember);
+            return Created("~api/Boards/" + boardId+"/members/"+ boardMember.Id, boardMemberDto);
         }
 
         [HttpPut("{boardId}/members/{memberId}")] // PUT api/Boards/123/members/456

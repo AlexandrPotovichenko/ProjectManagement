@@ -42,14 +42,25 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
-            CardMember CardMember = new CardMember(currentUserId, Role.Admin);
-            Card card = new Card(name, description, CardMember, listId);
-            card.List = list;
-            string actionDescription = $"Create Card";
-            card.Actions.Add(new CardAction(CardMember.Id, actionDescription));
-            Card insertedItem = await _cardRepository.InsertAsync(card);
+            CardMember cardMember = new CardMember(currentUserId, Role.Admin);
+
+            Card card = new Card(name, description, listId);
+            Card insertedCard = await _cardRepository.InsertAsync(card);
             await _cardRepository.UnitOfWork.SaveChangesAsync();
-            return insertedItem;
+            cardMember.Card = insertedCard;
+            cardMember.CardId = insertedCard.Id;
+
+            CardMember insertedCardMember = await _cardMemberRepository.InsertAsync(cardMember);
+            await _cardRepository.UnitOfWork.SaveChangesAsync();
+
+            insertedCard.CardMembers.Add(insertedCardMember);
+            insertedCard.List = list;
+
+            string actionDescription = $"Create Card";
+            insertedCard.Actions.Add(new CardAction(insertedCardMember.Id, actionDescription));
+            await _cardRepository.UpdateAsync(insertedCard);
+            await _cardRepository.UnitOfWork.SaveChangesAsync();
+            return insertedCard;
         }
 
         public async Task<Card> GetCardAsync(int cardId)
@@ -97,7 +108,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Guard.Against.CheckMemebershipCard(userId, card);
             CardMember newCardMember = new CardMember(userId, role);
             card.CardMembers.Add(newCardMember);
-            string actionDescription = $"Add member {userForMembership.Name}({userForMembership.Id}) with role {role}";
+            string actionDescription = $"Add member {userForMembership.Name}({userForMembership.Id}) with role '{role}'";
             CardAction cardAction = new CardAction(currentCardMember.Id, actionDescription);
             card.Actions.Add(cardAction);
             await _cardRepository.UpdateAsync(card);
@@ -140,7 +151,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Guard.Against.NullObject(cardMember.UserId, user, "User");
             Role oldRole = cardMember.Role;
             cardMember.Role = newRole;
-            string description = $"Update membership for user {user.Name}({user.Id}) from {oldRole} to {newRole}";
+            string description = $"Update membership for user {user.Name}({user.Id}) from '{oldRole}' to '{newRole}'";
             card.Actions.Add(new CardAction(currentCardMember.Id, description));
             await _cardRepository.UpdateAsync(card);
             await _cardRepository.UnitOfWork.SaveChangesAsync();
@@ -168,7 +179,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
-            Card card = await GetCardByIdAsync(cardId);
+            Card card = await GetCardWithItemsByIdAsync(cardId);
             return card.Actions.Where(a => a.IsComment);
         }
         public async Task<IEnumerable<CardAction>> GetCommentsOnCardAsync(int cardId, int commentId)
@@ -178,7 +189,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             {
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
-            Card card = await GetCardByIdAsync(cardId);
+            Card card = await GetCardWithItemsByIdAsync(cardId);
             return card.Actions.Where(a => a.Id == commentId && a.IsComment);
         }
 
@@ -192,7 +203,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Card card = await GetForEditByIdAsync(cardId);
             CardAction cardAction = card.Actions.FirstOrDefault(a => a.Id == commentId);
             Guard.Against.NullObject(commentId, cardAction, "Comment");
-            if (cardAction.MemberId != currentCardMember.Id) // the user can delete his own comments
+            if (cardAction.CardMemberId != currentCardMember.Id) // the user can delete his own comments
             {
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "Violation Exception while accessing the resource.");
             }
@@ -218,7 +229,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
                 throw new WebAppException((int)HttpStatusCode.NotAcceptable, "The card can be moved to another list only on the same board.");
             }
             card.List = newList;
-            string description = $"Move Card from list {oldList.Name} to list {newList}";
+            string description = $"Move Card from list '{oldList.Name}' to list '{newList}'";
             card.Actions.Add(new CardAction(currentCardMember.Id, description));
             await _cardRepository.UpdateAsync(card);
             await _cardRepository.UnitOfWork.SaveChangesAsync();
@@ -237,7 +248,12 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Guard.Against.NullObject(cardId, card, "Card");
             return card;
         }
-
+        private async Task<Card> GetCardWithItemsByIdAsync(int cardId)
+        {
+            Card card = await _cardRepository.GetWithItemsByIdAsync(cardId);
+            Guard.Against.NullObject(cardId, card, "Card");
+            return card;
+        }
         private async Task<Card> GetCardWithMembersByIdAsync(int cardId)
         {
             Card card = await _cardRepository.GetWithMembersAsync(cardId);

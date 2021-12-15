@@ -32,7 +32,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             }
             Card card = await GetForEditByIdAsync(cardId);
             CheckList checkList = new CheckList(name);
-            string actionDescription = $"Add CheckList {name}";
+            string actionDescription = $"Add CheckList '{name}'";
             CardAction cardAction = new CardAction(currentCardMember.Id, actionDescription);
             card.Actions.Add(cardAction);
             card.CheckLists.Add(checkList);
@@ -50,7 +50,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             }
             Card card = await GetForEditByIdAsync(checkList.CardId);
             CheckListItem checkListItem = new CheckListItem(name);
-            string actionDescription = $"Add CheckListItem {checkListItem.Name} to CheckList {checkList.Name}";
+            string actionDescription = $"Add CheckListItem '{checkListItem.Name}' to CheckList '{checkList.Name}'";
             CheckList checkListForEdit = card.CheckLists.Where(cl => cl.Id == checkListId).FirstOrDefault();
             Guard.Against.NullObject(checkListId, checkListForEdit, "CheckList");
             checkListForEdit.ChecklistItems.Add(checkListItem);
@@ -94,7 +94,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CheckListItem checkListItem = checkListForEdit.ChecklistItems.Where(cli => cli.Id == checkListItemId).FirstOrDefault();
             Guard.Against.NullObject(checkListItemId, checkListItem, "CheckListItem");
             checkListItem.IsDone = true;
-            string actionDescription = $"Complete  CheckListItem {checkListItem.Name}({checkListItem.Id})";
+            string actionDescription = $"Complete  CheckListItem '{checkListItem.Name}'({checkListItem.Id})";
             CardAction cardAction = new CardAction(currentCardMember.Id, actionDescription);
             card.Actions.Add(cardAction);
             await _cardRepository.UpdateAsync(card);
@@ -111,7 +111,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             Card card = await GetForEditByIdAsync(checkList.CardId);
             CheckList checkListForDeleting = card.CheckLists.Where(cl => cl.Id == checkListId).FirstOrDefault();
             card.CheckLists.Remove(checkListForDeleting);
-            string actionDescription = $"Delete CheckList {checkList.Name}({checkList.Id})";
+            string actionDescription = $"Delete CheckList '{checkList.Name}'({checkList.Id})";
             CardAction cardAction = new CardAction(currentCardMember.Id, actionDescription);
             card.Actions.Add(cardAction);
             await _cardRepository.UpdateAsync(card);
@@ -131,7 +131,7 @@ namespace ProjectManagement.BusinessLogic.Services.Implementation
             CheckListItem checkListItem = checkListForEdit.ChecklistItems.FirstOrDefault(cli => cli.Id == checkListItemId);
             Guard.Against.NullObject(checkListItemId, checkListItem, "ChecklistItem");
             checkListForEdit.ChecklistItems.Remove(checkListItem);
-            string actionDescription = $"Delete CheckListItem {checkListItem.Name}({checkListItem.Id})";
+            string actionDescription = $"Delete CheckListItem '{checkListItem.Name}'({checkListItem.Id})";
             CardAction cardAction = new CardAction(currentCardMember.Id, actionDescription);
             card.Actions.Add(cardAction);
             await _cardRepository.UpdateAsync(card);

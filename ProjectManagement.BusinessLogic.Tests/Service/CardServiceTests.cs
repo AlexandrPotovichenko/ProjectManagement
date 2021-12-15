@@ -134,6 +134,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             List list = new List() { Id = listId, BoardId = boardId };
             CardMember cardMember = new CardMember(_currentUserId, Role.Admin);
             Card card = new Card(cardName, description, cardMember, listId) { Id = cardId };
+            _cardMemberRepositoryMock.Setup(repo => repo.InsertAsync(It.IsAny<CardMember>())).Returns(Task.FromResult(cardMember));
             _cardRepositoryMock.Setup(repo => repo.InsertAsync(It.IsAny<Card>())).Returns(Task.FromResult(card));
             _cardRepositoryMock.Setup(repo => repo.CanCreateCardAsync(boardId, _currentUserId)).Returns(Task.FromResult(true));
             _listRepositoryMock.Setup(repo => repo.GetForEditByIdAsync(listId)).Returns(Task.FromResult(list));
@@ -628,7 +629,7 @@ namespace ProjectManagement.BusinessLogic.Tests.Service
             card.Actions.Add(new CardAction(cardMemberId, description + " 2", true) { Id = 2 });
             card.Actions.Add(new CardAction(cardMemberId, description + " 3", true) { Id = 3 });
             CardMember cardMember = card.CardMembers.FirstOrDefault(m => m.UserId == _currentUserId);
-            _cardRepositoryMock.Setup(x => x.GetByIdAsync(cardId)).Returns(Task.FromResult(card));
+            _cardRepositoryMock.Setup(x => x.GetWithItemsByIdAsync(cardId)).Returns(Task.FromResult(card));
             _cardMemberRepositoryMock.Setup(x => x.GetSingleAsync(It.Is<GetCardMemberByUserIdSpecification>(ms => ms.CardId == cardId && ms.UserId == _currentUserId)))
                 .Returns(Task.FromResult(cardMember));
             // Act

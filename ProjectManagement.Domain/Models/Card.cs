@@ -20,13 +20,16 @@ namespace ProjectManagement.Domain.Models
             CheckLists = new List<CheckList>();
             CardMembers = new List<CardMember>();
         }
-        public Card(string name, string description, CardMember cardMember, int listId) : this()
+        public Card(string name, string description,  int listId) : this()
         {
             Name = name;
             Description = description;
-            CardMembers.Add(cardMember);
             ListId = listId;
+           
         }
-
+        public Card(string name, string description, CardMember cardMember, int listId) : this( name,  description,  listId)
+        {
+            CardMembers.Add(cardMember);
+        }
     }
 }

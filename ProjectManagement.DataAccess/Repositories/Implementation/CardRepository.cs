@@ -15,11 +15,11 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         }
         public async Task<IEnumerable<Card>> GetWithItemsAsync(int userId)
         {
-            return await _context.Cards.Where(c => c.CardMembers.Any(cm => cm.UserId == userId)).Include(c => c.CardMembers).Include(c=>c.CheckLists).Include(c => c.Actions).Include(c => c.List).AsNoTracking().ToListAsync<Card>();
+            return await _context.Cards.Where(c => c.CardMembers.Any(cm => cm.UserId == userId)).Include(c => c.CardMembers).Include(c=>c.CheckLists).Include(c => c.Actions).ThenInclude(a=>a.CardMember).Include(c => c.List).AsNoTracking().ToListAsync<Card>();
         }
         public async Task<Card> GetForEditByIdAsync(int cardId)
         {
-            return await _context.Cards.Where(c => c.Id == cardId).Include(c => c.CardMembers).Include(c => c.CheckLists).ThenInclude(cl=>cl.ChecklistItems).Include(c => c.Actions).Include(c=>c.List).FirstOrDefaultAsync(); 
+            return await _context.Cards.Where(c => c.Id == cardId).Include(c => c.CardMembers).Include(c => c.CheckLists).ThenInclude(cl=>cl.ChecklistItems).Include(c => c.Actions).ThenInclude(a => a.CardMember).Include(c=>c.List).FirstOrDefaultAsync(); 
         }
         public async Task<Card> GetWithMembersAsync(int cardId)
         {
@@ -34,7 +34,7 @@ namespace ProjectManagement.DataAccess.Repositories.Implementation
         }
         public async Task<Card> GetWithItemsByIdAsync(int cardId)
         {
-            return await _context.Cards.Where(c => c.Id == cardId).Include(c => c.CardMembers).Include(c => c.CheckLists).Include(c => c.Actions).Include(c => c.List).AsNoTracking().FirstOrDefaultAsync();
+            return await _context.Cards.Where(c => c.Id == cardId).Include(c => c.CardMembers).Include(c => c.CheckLists).Include(c => c.Actions).ThenInclude(a => a.CardMember).Include(c => c.List).AsNoTracking().FirstOrDefaultAsync();
         }
     }
 }
